@@ -9,7 +9,6 @@ import sklearn
 import matplotlib.pyplot as plt
 import copy
 import itertools
-import typing
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -38,10 +37,9 @@ class HighD:
                                             [1 for i in self.scaled.columns]])
         self.min_max_vals = pd.DataFrame(index=["min", "max"])
         for i, col in enumerate(self.scaled.columns):
-            self.min_max_vals[col] = [np.round(min_max[0][i], 2),
-                                      np.round(min_max[1][i], 2)]
+            self.min_max_vals[col] = [min_max[0][i], min_max[1][i]]
 
-    def density_estimate(self, f, n=100, k_dens=0.02):
+    def density_estimate(self, f, n=100, resolution=25, k_dens=0.02):
         kernel = KernelDensity(k_dens).fit(self.scaled)
 
         # Draw random sample from the sample space and store.
@@ -50,16 +48,10 @@ class HighD:
         prediction = f(self.D)
         self.D["prediction"] = prediction
 
-        self.select_vis_cols()
-
-    def select_vis_cols(self, cols: list=None, n_bins=25):
-        if not cols:
-            cols = self.D.columns[:-1]
-
         # Put values into bins.
-        res_vals = np.linspace(-0.0, 1.0, n_bins)
+        res_vals = np.linspace(-0.0, 1.0, resolution)
         self.D_bins = pd.DataFrame()
-        for col in cols:
+        for col in self.D.columns[:-1]:
             tmp = self.D[[col, "prediction"]]
             tmp["bin"] = pd.cut(tmp[col], bins=res_vals)
             tmp = tmp.sort_values(by="bin")
@@ -71,12 +63,8 @@ class HighD:
         # value.
         self.D_bins = self.D_bins.fillna(0.5)
 
-    def scatter_plot_matrix(self, cols: list=None):
-        if not cols:
-            to_plot = self.scaled
-        else:
-            to_plot = self.scaled[cols]
-        pd.plotting.scatter_matrix(to_plot)
+    def scatter_plot_matrix(self):
+        pd.plotting.scatter_matrix(self.scaled)
         plt.grid(b=None)
         plt.show()
 
@@ -84,18 +72,16 @@ class HighD:
         self.D.plot.scatter(x="prediction", y=col)
         plt.title(col + " value and certainty classification")
 
-    def vis_1d(self, figsize=(16, 4)):
+    def vis_1d(self):
         # Shifting everything down 0.5 makes 0 the uncertain value.
         D_mid_bins = copy.deepcopy(self.D_bins)
         for col in D_mid_bins[:-1]:
             D_mid_bins[col] = D_mid_bins[col] - 0.5
         D_mid_bins.plot.bar(xlim=(-0.15, 1.15), ylim=(-0.6, 0.6),
-                            title="Dimension certainty", figsize=figsize)
+                            title="Dimension certainty")
         plt.show()
 
     def vis_2d(self, title):
-        """
-        """
         # Some thanks to https://stackoverflow.com/questions/7941207/is-there-a-function-to-make-scatterplot-matrices-in-matplotlib
         np.random.seed(42)
         cols = self.D_bins.columns
@@ -135,7 +121,7 @@ class HighD:
             # Select mid values of intervals for x values.
             x = [i.mid for i in np.array(bar_vals.keys())]
             y = bar_vals.values
-            axes[i, i].bar(x=x, height=y, width=1/(len(x) - 1))
+            axes[i, i].bar(x=x, height=y, width=1/len(x))
             axes[i, i].set_xlim(0.0, 1.0)
             axes[i, i].set_ylim(-0.5, 0.5)
             axes[i, i].grid(False)
@@ -143,14 +129,12 @@ class HighD:
         # Add X labels to all of bottom row.
         for i, _ in enumerate(cols):
             axes[n_cols-1, i].xaxis.set_visible(True)
-            axes[n_cols-1, i].set_xlabel(cols[i] + " [" + str(
-                self.min_max_vals[cols[i]]["min"]) + ", " + str(
-                    self.min_max_vals[cols[i]]["max"]) + "]")
+            axes[n_cols-1, i].set_xlabel(cols[i] + " [" + str(self.min_max_vals[cols[i]]["min"]) + 
+                                         ", " + str(self.min_max_vals[cols[i]]["max"]) + "]")
 
             axes[i, 0].yaxis.set_visible(True)
-            axes[i, 0].set_ylabel(cols[i] + " [" + str(
-                self.min_max_vals[cols[i]]["min"]) + ", " + str(
-                    self.min_max_vals[cols[i]]["max"]) + "]")
+            axes[i, 0].set_ylabel(cols[i] + " [" + str(self.min_max_vals[cols[i]]["min"]) + 
+                                            ", " + str(self.min_max_vals[cols[i]]["max"]) + "]")
 
         if title:
             fig.suptitle(title, size="26")
