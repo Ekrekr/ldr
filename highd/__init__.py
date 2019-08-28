@@ -96,12 +96,13 @@ class HighD:
     def vis_2d(self, title):
         """
         """
-        # Some thanks to https://stackoverflow.com/questions/7941207/is-there-a-function-to-make-scatterplot-matrices-in-matplotlib
+        # Some thanks to https://stackoverflow.com/questions/7941207/
+        # is-there-a-function-to-make-scatterplot-matrices-in-matplotlib
         np.random.seed(42)
         cols = self.D_bins.columns
         n_cols = len(self.D_bins.columns)
-        fig, axes = plt.subplots(nrows=n_cols, ncols=n_cols,
-                                 figsize=(n_cols * 4, n_cols * 4))
+        fig, axes = plt.subplots(nrows=n_cols+1, ncols=n_cols+1,
+                                 figsize=(n_cols * 3.5, n_cols * 3.5))
 
         # Hide all ticks and labels
         for ax in axes.flat:
@@ -123,34 +124,66 @@ class HighD:
 
         # Plot the data.
         for i, j in zip(*np.triu_indices_from(axes, k=1)):
-            for x, y in [(i, j), (j, i)]:
-                Zm = [[(i * j)-0.5 for i in self.D_bins[cols[x]]] for
-                      j in self.D_bins[cols[y]]]
-                axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(-0.5, 0.5,
-                                    21), cmap="seismic")
+            # Don't want to plot outer columns.
+            if i < n_cols and j < n_cols:
+                for x, y in [(i, j), (j, i)]:
+                    Zm = [[(i * j)-0.5 for i in self.D_bins[cols[x]]] for
+                          j in self.D_bins[cols[y]]]
+                    axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(-0.5,
+                                        0.5, 21), cmap="seismic")
 
-        # Add bar charts as diagonal plots.
+        # Add labels of variables with scaled interval.
+        for i, col in enumerate(cols):
+            axes[i, i].annotate("MinMax Scale:\n[" + str(
+                self.min_max_vals[cols[i]]["min"]) + ", " + str(
+                self.min_max_vals[cols[i]]["max"]) + "]", (0.5, 0.5),
+                xycoords='axes fraction',
+                ha='center', va='center')
+            axes[i, i].grid(False)
+
+        # Add bar charts as charts on bottom and right.
         for i, col in enumerate(cols):
             bar_vals = self.D_bins[col] - 0.5
             # Select mid values of intervals for x values.
             x = [i.mid for i in np.array(bar_vals.keys())]
             y = bar_vals.values
-            axes[i, i].bar(x=x, height=y, width=1/(len(x) - 1))
-            axes[i, i].set_xlim(0.0, 1.0)
-            axes[i, i].set_ylim(-0.5, 0.5)
-            axes[i, i].grid(False)
 
-        # Add X labels to all of bottom row.
-        for i, _ in enumerate(cols):
-            axes[n_cols-1, i].xaxis.set_visible(True)
-            axes[n_cols-1, i].set_xlabel(cols[i] + " [" + str(
-                self.min_max_vals[cols[i]]["min"]) + ", " + str(
-                    self.min_max_vals[cols[i]]["max"]) + "]")
+            axes[i, n_cols].bar(x=x, height=y, width=1/(len(x) - 1))
+            axes[i, n_cols].set_xlim(0.0, 1.0)
+            axes[i, n_cols].set_ylim(-0.5, 0.5)
+            axes[i, n_cols].set_yticks(np.arange(-0.5, 0.75, 0.25))
+            axes[i, n_cols].grid(False)
+            axes[i, n_cols].yaxis.set_visible(True)
+            axes[i, n_cols].yaxis.tick_right()
+            axes[i, n_cols].set_ylabel(col)
+            axes[i, n_cols].yaxis.set_label_position("right")
 
+            axes[n_cols, i].barh(x, y, height=1/(len(x) - 1))
+            axes[n_cols, i].set_xlim(-0.5, 0.5)
+            axes[n_cols, i].set_ylim(0.0, 1.0)
+            axes[n_cols, i].set_xticks(np.arange(-0.5, 0.75, 0.25))
+            axes[n_cols, i].grid(False)
+            axes[n_cols, i].xaxis.set_visible(True)
+            axes[n_cols, i].set_xlabel(col)
+
+        # Add X axis ticks to bottom right single density bar.
+        axes[n_cols - 1, n_cols].xaxis.set_visible(True)
+
+        # Add X axis ticks to bottom left single density bar.
+        axes[n_cols, 0].yaxis.set_visible(True)
+
+        # Add X and Y labels to contours.
+        for i in range(len(cols)):
+            axes[n_cols - 1, i].xaxis.set_visible(True)
             axes[i, 0].yaxis.set_visible(True)
-            axes[i, 0].set_ylabel(cols[i] + " [" + str(
-                self.min_max_vals[cols[i]]["min"]) + ", " + str(
-                    self.min_max_vals[cols[i]]["max"]) + "]")
+
+        # Add label in bottom right.
+        axes[n_cols, n_cols].annotate("Class certainty.\n" +
+                                      "0.5 certain of True.\n" +
+                                      "0.0 no certainty\n" +
+                                      "-0.5 certain of False", (0.5, 0.5),
+                                      xycoords='axes fraction', ha='center',
+                                      va='center')
 
         if title:
             fig.suptitle(title, size="26")
