@@ -7,8 +7,10 @@ import pandas as pd
 import numpy as np
 import sklearn
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import copy
 import itertools
+import typing
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -18,12 +20,26 @@ from sklearn.preprocessing import MinMaxScaler
 from scipy import stats
 
 np.random.seed(0)
-
-plt.style.use("illumina.mplstyle")
+# Disable warning where bin cut is set (false positive).
+pd.options.mode.chained_assignment = None
 
 
 class HighD:
-    def __init__(self, df, targets):
+    def __init__(self, df: pd.DataFrame, targets: pd.Series, pos_val: bool,
+                 neg_val: bool, sample_pos: bool=True, sample_neg: bool=True):
+        """
+        args:
+            df: The data (excluding targets).
+            targets: The targets.
+            pos_val: Value of positives in targets.
+            neg_val: Value of negatives in targets.
+            sample_pos: Whether to include samples from positives sample space.
+            sample_neg: Wheter to include samples from negative sample space.
+        """
+        self.pos_val = pos_val
+        self.sample_pos = sample_pos
+        self.sample_neg = sample_neg
+
         # Select numerical and scale the data to [0, 1].
         self.df = df.select_dtypes(include=np.number)
         self.targets = np.array(targets)
@@ -32,15 +48,57 @@ class HighD:
         self.scaled = pd.DataFrame(scale)
         self.scaled.columns = self.df.columns
 
+        self.scaled_w = copy.deepcopy(self.scaled)
+
+        # Create a weighted sample space to draw from.
+        self.scaled_w["target"] = targets
+        pos = self.scaled_w[self.scaled_w["target"] == pos_val]
+        neg = self.scaled_w[self.scaled_w["target"] == neg_val]
+
+        if sample_pos and sample_neg:
+            if neg.shape[0] < pos.shape[0]:
+                # Duplicate negative values until equal amount as positive.
+                while neg.shape[0] < pos.shape[0]:
+                    # Don't want to exceed post size
+                    con = neg[:pos.shape[0] - neg.shape[0]] if pos.shape[
+                        0] - neg.shape[0] < neg.shape[0] else neg
+                    neg = pd.concat([neg, con])
+            elif pos.shape[0] < neg.shape[0]:
+                # Duplicate positive values until equal amount as negative.
+                while pos.shape[0] < neg.shape[0]:
+                    # Don't want to exceed post size
+                    con = pos[:neg.shape[0] - pos.shape[0]] if neg.shape[
+                        0] - pos.shape[0] < pos.shape[0] else pos
+                    pos = pd.concat([pos, con])
+
+            print("Class balance fixed, Negatives:", neg.shape[0],
+                  ", Positives:", pos.shape[0])
+            self.scaled_w = pd.concat([pos, neg])
+
+        if sample_pos and not sample_neg:
+            self.scaled_w = pos
+        if not sample_pos and sample_neg:
+            self.scaled_w = neg
+        if not sample_pos and not sample_neg:
+            raise Exception(
+                "At least one of sample_pos and sample_neg must be True")
+
+        self.targets_w = self.scaled_w["target"]
+        self.scaled_w = self.scaled_w.drop(["target"], axis=1)
+
         # Create structure to store min and max values from scaling.
         min_max = scaler.inverse_transform([[0 for i in self.scaled.columns],
                                             [1 for i in self.scaled.columns]])
         self.min_max_vals = pd.DataFrame(index=["min", "max"])
         for i, col in enumerate(self.scaled.columns):
-            self.min_max_vals[col] = [min_max[0][i], min_max[1][i]]
+            self.min_max_vals[col] = [np.round(min_max[0][i], 2),
+                                      np.round(min_max[1][i], 2)]
 
-    def density_estimate(self, f, n=100, resolution=25, k_dens=0.02):
-        kernel = KernelDensity(k_dens).fit(self.scaled)
+    def density_estimate(self, f, n=100, k_dens=0.02, n_bins=50):
+        # n_bins <= 1/k_dens as that the bucket resolution should not exceed
+        # that of the kernel density.
+        kernel = KernelDensity(k_dens).fit(self.scaled_w)
+        self.n_bins = n_bins
 
         # Draw random sample from the sample space and store.
         self.D = pd.DataFrame(kernel.sample(n))
@@ -48,10 +106,17 @@ class HighD:
         prediction = f(self.D)
         self.D["prediction"] = prediction
 
+        self.select_vis_cols(n_bins=n_bins)
+
+    def select_vis_cols(self, cols: list=None, n_bins=50):
+        if not cols:
+            cols = self.D.columns[:-1]
+        self.n_bins = n_bins
+
         # Put values into bins.
-        res_vals = np.linspace(-0.0, 1.0, resolution)
+        res_vals = np.linspace(-0.0, 1.0, n_bins)
         self.D_bins = pd.DataFrame()
-        for col in self.D.columns[:-1]:
+        for col in cols:
             tmp = self.D[[col, "prediction"]]
             tmp["bin"] = pd.cut(tmp[col], bins=res_vals)
             tmp = tmp.sort_values(by="bin")
@@ -63,8 +128,12 @@ class HighD:
         # value.
         self.D_bins = self.D_bins.fillna(0.5)
 
-    def scatter_plot_matrix(self):
-        pd.plotting.scatter_matrix(self.scaled)
+    def scatter_plot_matrix(self, cols: list=None):
+        if not cols:
+            to_plot = self.scaled
+        else:
+            to_plot = self.scaled[cols]
+        pd.plotting.scatter_matrix(to_plot)
         plt.grid(b=None)
         plt.show()
 
@@ -72,69 +141,151 @@ class HighD:
         self.D.plot.scatter(x="prediction", y=col)
         plt.title(col + " value and certainty classification")
 
-    def vis_1d(self):
+    def vis_1d(self, figsize=(16, 4)):
         # Shifting everything down 0.5 makes 0 the uncertain value.
         D_mid_bins = copy.deepcopy(self.D_bins)
         for col in D_mid_bins[:-1]:
             D_mid_bins[col] = D_mid_bins[col] - 0.5
         D_mid_bins.plot.bar(xlim=(-0.15, 1.15), ylim=(-0.6, 0.6),
-                            title="Dimension certainty")
+                            title="Dimension certainty", figsize=figsize)
+        plt.show()
+
+    def _rescale(self, min_val, max_val, x):
+        return (max_val - min_val) * x + min_val
+
+    def _break_text(self, txt):
+        ret = txt[:15]
+        if len(txt) >= 15:
+            ret += ("\n" + txt[15:30])
+        if len(txt) >= 30:
+            ret += ("\n" + txt[30:45])
+        return ret
+
+    def vis_1d_separate(self, title):
+        rows = self.D_bins.columns
+        n_rows = len(rows)
+        fig, axes = plt.subplots(nrows=n_rows, ncols=1,
+                                 figsize=(8.0, n_rows * 4.0))
+        for i, row in enumerate(rows):
+            min_val = self.min_max_vals[row]["min"]
+            max_val = self.min_max_vals[row]["max"]
+
+            # Select mid values of intervals for x values.
+            bar_vals = self.D_bins[row] - 0.5
+            x = [self._rescale(min_val, max_val, i.mid)
+                 for i in np.array(bar_vals.keys())]
+            y = bar_vals.values
+
+            axes[i].bar(x=x, height=y,
+                        width=(max_val - min_val) / len(x) * 1.05)
+            axes[i].set_ylim(-0.5, 0.5)
+            axes[i].set_yticks(np.arange(-0.5, 0.75, 0.25))
+            axes[i].set_xlim(min_val, max_val)
+            axes[i].set_xticks(np.linspace(min_val, max_val, 5))
+            axes[i].grid(False)
+            axes[i].set_ylabel(self._break_text(row))
+
+        if title:
+            fig.suptitle(title, size="26")
+        fig.tight_layout(rect=[0, 0, 1, 0.96])
         plt.show()
 
     def vis_2d(self, title):
-        # Some thanks to https://stackoverflow.com/questions/7941207/is-there-a-function-to-make-scatterplot-matrices-in-matplotlib
+        """
+        """
+        # Some thanks to https://stackoverflow.com/questions/7941207/
+        # is-there-a-function-to-make-scatterplot-matrices-in-matplotlib
         np.random.seed(42)
         cols = self.D_bins.columns
-        n_cols = len(self.D_bins.columns)
-        fig, axes = plt.subplots(nrows=n_cols, ncols=n_cols,
-                                 figsize=(n_cols * 4, n_cols * 4))
+        n_cols = len(cols)
+        fig, axes = plt.subplots(nrows=n_cols+1, ncols=n_cols+1,
+                                 figsize=(n_cols * 4.0, n_cols * 3.5))
 
-        # Hide all ticks and labels
+        # Hide all ticks and labels, but set default to [0, 1].
         for ax in axes.flat:
             ax.xaxis.set_visible(False)
             ax.yaxis.set_visible(False)
+            ax.set_xlim(0.0, 1.0)
+            ax.set_ylim(0.0, 1.0)
 
-        # Set up ticks only on one side for the "edge" subplots...
-        if ax.is_first_col():
-            ax.yaxis.set_ticks_position('left')
-        if ax.is_last_col():
-            ax.yaxis.set_ticks_position('right')
-        if ax.is_first_row():
-            ax.xaxis.set_ticks_position('top')
-        if ax.is_last_row():
-            ax.xaxis.set_ticks_position('bottom')
-
+        # Calculate the general [0, 1] meshgrid for contours.
         res_sub = np.linspace(-0.0, 1.0, len(self.D_bins))
         Xm, Ym = np.meshgrid(res_sub, res_sub)
 
         # Plot the data.
         for i, j in zip(*np.triu_indices_from(axes, k=1)):
-            for x, y in [(i, j), (j, i)]:
-                Zm = [[(i * j)-0.5 for i in self.D_bins[cols[x]]] for
-                      j in self.D_bins[cols[y]]]
-                axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(-0.5, 0.5,
-                                    21), cmap="seismic")
+            # Don't want to plot outer columns.
+            if i < n_cols and j < n_cols:
+                for x, y in [(i, j), (j, i)]:
+                    Zm = [[(i * j)-0.5 for i in self.D_bins[cols[x]]] for
+                          j in self.D_bins[cols[y]]]
+                    axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(-0.5,
+                                        0.5, 21), cmap="seismic")
 
-        # Add bar charts as diagonal plots.
+        # Add bar charts as charts on bottom and right.
         for i, col in enumerate(cols):
-            bar_vals = self.D_bins[col] - 0.5
+            min_val = self.min_max_vals[col]["min"]
+            max_val = self.min_max_vals[col]["max"]
+
             # Select mid values of intervals for x values.
-            x = [i.mid for i in np.array(bar_vals.keys())]
+            bar_vals = self.D_bins[col] - 0.5
+            x = [self._rescale(min_val, max_val, i.mid)
+                 for i in np.array(bar_vals.keys())]
             y = bar_vals.values
-            axes[i, i].bar(x=x, height=y, width=1/len(x))
-            axes[i, i].set_xlim(0.0, 1.0)
-            axes[i, i].set_ylim(-0.5, 0.5)
+
+            # Add density bar charts as bottom row.
+            axes[i, n_cols].bar(x=x, height=y,
+                                width=(max_val - min_val) / len(x) * 1.05)
+            axes[i, n_cols].set_ylim(-0.5, 0.5)
+            axes[i, n_cols].set_yticks(np.arange(-0.5, 0.75, 0.25))
+            axes[i, n_cols].set_xlim(min_val, max_val)
+            axes[i, n_cols].set_xticks(np.linspace(min_val, max_val, 3))
+            axes[i, n_cols].grid(False)
+            axes[i, n_cols].xaxis.set_visible(True)
+            axes[i, n_cols].yaxis.set_visible(True)
+            axes[i, n_cols].yaxis.tick_right()
+            axes[i, n_cols].yaxis.set_label_position("right")
+            axes[i, n_cols].set_ylabel(self._break_text(col))
+
+            # Add density bar charts as right row.
+            axes[n_cols, i].barh(x, y,
+                                 height=(max_val - min_val) / len(x) * 1.05)
+            axes[n_cols, i].set_xlim(-0.5, 0.5)
+            axes[n_cols, i].set_xticks(np.arange(-0.5, 0.75, 0.25))
+            axes[n_cols, i].set_ylim(min_val, max_val)
+            axes[n_cols, i].set_yticks(np.linspace(min_val, max_val, 3))
+            axes[n_cols, i].grid(False)
+            axes[n_cols, i].yaxis.set_visible(True)
+            axes[n_cols, i].xaxis.set_visible(True)
+            axes[n_cols, i].set_xlabel(self._break_text(col))
+
+            # Add labels of variables with scaled interval in diagonal.
+            axes[i, i].annotate(self._break_text(col), (0.5, 0.5),
+                                xycoords='axes fraction', ha='center',
+                                va='center')
+            # axes[i, i].annotate("Mean Certainty:\n" + str(np.round(np.mean(
+            #     self.D_bins[col] - 0.5), 3)), (0.5, 0.5),
+            #     xycoords='axes fraction', ha='center', va='center')
             axes[i, i].grid(False)
 
-        # Add X labels to all of bottom row.
-        for i, _ in enumerate(cols):
+        # Add axis to left and bottom contours.
+        for i, _ in enumerate(cols[:-1]):
+            axes[i + 1, 0].yaxis.set_visible(True)
             axes[n_cols-1, i].xaxis.set_visible(True)
-            axes[n_cols-1, i].set_xlabel(cols[i] + " [" + str(self.min_max_vals[cols[i]]["min"]) + 
-                                         ", " + str(self.min_max_vals[cols[i]]["max"]) + "]")
 
-            axes[i, 0].yaxis.set_visible(True)
-            axes[i, 0].set_ylabel(cols[i] + " [" + str(self.min_max_vals[cols[i]]["min"]) + 
-                                            ", " + str(self.min_max_vals[cols[i]]["max"]) + "]")
+        # Add X axis ticks to bottom right single density bar.
+        axes[n_cols - 1, n_cols].xaxis.set_visible(True)
+
+        # Add Y axis ticks to bottom left single density bar.
+        axes[0, 1].yaxis.set_visible(True)
+
+        # Add label in bottom right.
+        axes[n_cols, n_cols].annotate("Class certainty.\n" +
+                                      "0.5 certain of True.\n" +
+                                      "0.0 no certainty\n" +
+                                      "-0.5 certain of False", (0.5, 0.5),
+                                      xycoords='axes fraction', ha='center',
+                                      va='center')
 
         if title:
             fig.suptitle(title, size="26")
