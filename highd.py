@@ -106,15 +106,15 @@ class HighD:
         prediction = f(self.D)
         self.D["prediction"] = prediction
 
-        self.select_vis_cols(n_bins=n_bins)
+        self.select_1d_bins(n_bins=n_bins)
 
-    def select_vis_cols(self, cols: list=None, n_bins=50):
+    def select_1d_bins(self, cols: list=None, n_bins=50):
         if not cols:
             cols = self.D.columns[:-1]
         self.n_bins = n_bins
 
         # Put values into bins.
-        res_vals = np.linspace(-0.0, 1.0, n_bins)
+        res_vals = np.linspace(0.0, 1.0, n_bins)
         self.D_bins = pd.DataFrame()
         for col in cols:
             tmp = self.D[[col, "prediction"]]
@@ -128,6 +128,8 @@ class HighD:
         # value.
         self.D_bins = self.D_bins.fillna(0.5)
 
+    # def select_2d_bins(self):
+
     def scatter_plot_matrix(self, cols: list=None):
         if not cols:
             to_plot = self.scaled
@@ -138,6 +140,10 @@ class HighD:
         plt.show()
 
     def density_scatter(self, col):
+        self.D.plot.scatter(x="prediction", y=col)
+        plt.title(col + " value and certainty classification")
+
+    def density_contour(self, col):
         self.D.plot.scatter(x="prediction", y=col)
         plt.title(col + " value and certainty classification")
 
@@ -217,10 +223,10 @@ class HighD:
             # Don't want to plot outer columns.
             if i < n_cols and j < n_cols:
                 for x, y in [(i, j), (j, i)]:
-                    Zm = [[(i * j)-0.5 for i in self.D_bins[cols[x]]] for
+                    Zm = [[((i + j)/2)-0.5 for i in self.D_bins[cols[x]]] for
                           j in self.D_bins[cols[y]]]
                     axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(-0.5,
-                                        0.5, 21), cmap="seismic")
+                                        0.5, 41), cmap="seismic")
 
         # Add bar charts as charts on bottom and right.
         for i, col in enumerate(cols):
