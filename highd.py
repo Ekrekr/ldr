@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KernelDensity
 from sklearn.preprocessing import MinMaxScaler
+from sklearn import svm
 from scipy import stats
 
 np.random.seed(0)
@@ -170,6 +171,7 @@ class HighD:
     def vis_1d_separate(self, title):
         rows = self.D_bins.columns
         n_rows = len(rows)
+        colors = plt.get_cmap("Spectral")
         fig, axes = plt.subplots(nrows=n_rows, ncols=1,
                                  figsize=(8.0, n_rows * 4.0))
         for i, row in enumerate(rows):
@@ -181,9 +183,10 @@ class HighD:
             x = [self._rescale(min_val, max_val, i.mid)
                  for i in np.array(bar_vals.keys())]
             y = bar_vals.values
+            c = [colors(i+0.5) for i in y]
 
             axes[i].bar(x=x, height=y,
-                        width=(max_val - min_val) / len(x) * 1.05)
+                        width=(max_val - min_val) / len(x) * 1.05, color=c)
             axes[i].set_ylim(-0.5, 0.5)
             axes[i].set_yticks(np.arange(-0.5, 0.75, 0.25))
             axes[i].set_xlim(min_val, max_val)
@@ -202,6 +205,7 @@ class HighD:
         # Some thanks to https://stackoverflow.com/questions/7941207/
         # is-there-a-function-to-make-scatterplot-matrices-in-matplotlib
         np.random.seed(42)
+        colors = plt.get_cmap("Spectral")
         cols = self.D_bins.columns
         n_cols = len(cols)
         fig, axes = plt.subplots(nrows=n_cols+1, ncols=n_cols+1,
@@ -215,18 +219,25 @@ class HighD:
             ax.set_ylim(0.0, 1.0)
 
         # Calculate the general [0, 1] meshgrid for contours.
-        res_sub = np.linspace(-0.0, 1.0, len(self.D_bins))
+        res_sub = np.linspace(0.0, 1.0, len(self.D_bins))
         Xm, Ym = np.meshgrid(res_sub, res_sub)
 
         # Plot the data.
+        # TODO: Optimise this to not repeat 2D contours.
         for i, j in zip(*np.triu_indices_from(axes, k=1)):
             # Don't want to plot outer columns.
             if i < n_cols and j < n_cols:
                 for x, y in [(i, j), (j, i)]:
-                    Zm = [[((i + j)/2)-0.5 for i in self.D_bins[cols[x]]] for
-                          j in self.D_bins[cols[y]]]
-                    axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(-0.5,
-                                        0.5, 41), cmap="seismic")
+                    # Use epsilon equal to resolution of the contour.
+                    clf = svm.SVR(gamma="scale", epsilon=res_sub[0])
+                    sample = self.D.sample(10000)
+                    clf.fit(sample[[cols[x], cols[y]]], sample["prediction"])
+                    res_sub = np.linspace(0.0, 1.0, 21)
+                    Xm, Ym = np.meshgrid(res_sub, res_sub)
+                    Zm = [[clf.predict([[i, j]])[0] - 0.5 for i in res_sub]
+                          for j in res_sub]
+                    axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
+                        -0.5, 0.5, 41), cmap="Spectral")
 
         # Add bar charts as charts on bottom and right.
         for i, col in enumerate(cols):
@@ -238,9 +249,10 @@ class HighD:
             x = [self._rescale(min_val, max_val, i.mid)
                  for i in np.array(bar_vals.keys())]
             y = bar_vals.values
+            c = [colors(i+0.5) for i in y]
 
             # Add density bar charts as bottom row.
-            axes[i, n_cols].bar(x=x, height=y,
+            axes[i, n_cols].bar(x=x, height=y, color=c,
                                 width=(max_val - min_val) / len(x) * 1.05)
             axes[i, n_cols].set_ylim(-0.5, 0.5)
             axes[i, n_cols].set_yticks(np.arange(-0.5, 0.75, 0.25))
@@ -254,7 +266,7 @@ class HighD:
             axes[i, n_cols].set_ylabel(self._break_text(col))
 
             # Add density bar charts as right row.
-            axes[n_cols, i].barh(x, y,
+            axes[n_cols, i].barh(x, y, color=c,
                                  height=(max_val - min_val) / len(x) * 1.05)
             axes[n_cols, i].set_xlim(-0.5, 0.5)
             axes[n_cols, i].set_xticks(np.arange(-0.5, 0.75, 0.25))
