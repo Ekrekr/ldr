@@ -1,9 +1,9 @@
 [0] Config.pm:304> INFO - This is Biber 2.12
 [0] Config.pm:307> INFO - Logfile is 'write_up.blg'
-[56] biber-darwin:315> INFO - === Fri Aug 30, 2019, 10:02:23
-[81] Biber.pm:371> INFO - Reading 'write_up.bcf'
-[169] Biber.pm:889> INFO - Found 0 citekeys in bib section 0
-[180] Utils.pm:193> WARN - The file 'write_up.bcf' does not contain any citations!
-[186] bbl.pm:636> INFO - Writing 'write_up.bbl' with encoding 'UTF-8'
-[187] bbl.pm:739> INFO - Output to write_up.bbl
-[187] Biber.pm:110> INFO - WARNINGS: 1
+[36] biber-darwin:315> INFO - === Fri Aug 30, 2019, 12:54:17
+[57] Biber.pm:371> INFO - Reading 'write_up.bcf'
+[148] Biber.pm:889> INFO - Found 0 citekeys in bib section 0
+[155] Utils.pm:193> WARN - The file 'write_up.bcf' does not contain any citations!
+[162] bbl.pm:636> INFO - Writing 'write_up.bbl' with encoding 'UTF-8'
+[162] bbl.pm:739> INFO - Output to write_up.bbl
+[162] Biber.pm:110> INFO - WARNINGS: 1

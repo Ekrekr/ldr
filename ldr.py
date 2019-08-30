@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""HighD - init
+"""LDR - init
 
 Classifier Certainty Visualization.
 """
@@ -25,13 +25,19 @@ np.random.seed(0)
 pd.options.mode.chained_assignment = None
 
 
-class HighD:
-    def __init__(self, df: pd.DataFrame, targets: pd.Series, pos_val: bool,
-                 neg_val: bool, sample_pos: bool=True, sample_neg: bool=True):
+class LDR:
+    def __init__(self, df: pd.DataFrame, targets: pd.Series, problem_type,
+                 pos_val: any=None, neg_val: any=None, sample_pos: bool=True,
+                 sample_neg: bool=True):
         """
+        Latent Dimensionality Reduction.
+
+        Note: Currently only supports binary classification.
+
         args:
             df: The data (excluding targets).
-            targets: The targets.
+            targets: The targets of the model.
+            problem_type: 'class' for classification or 'reg' for regression.
             pos_val: Value of positives in targets.
             neg_val: Value of negatives in targets.
             sample_pos: Whether to include samples from positives sample space.
@@ -40,49 +46,62 @@ class HighD:
         self.pos_val = pos_val
         self.sample_pos = sample_pos
         self.sample_neg = sample_neg
+        self.problem_type = problem_type
 
         # Select numerical and scale the data to [0, 1].
         self.df = df.select_dtypes(include=np.number)
         self.targets = np.array(targets)
+
+        # Targets should be min-max scaled too if regression.
+        if problem_type == "reg":
+            self.df["target"] = self.targets
+
         scaler = MinMaxScaler()
         scale = scaler.fit_transform(self.df)
         self.scaled = pd.DataFrame(scale)
         self.scaled.columns = self.df.columns
 
+        # Copy scaled to apply target normalization weightings to without
+        # modifying original.
         self.scaled_w = copy.deepcopy(self.scaled)
 
-        # Create a weighted sample space to draw from.
-        self.scaled_w["target"] = targets
-        pos = self.scaled_w[self.scaled_w["target"] == pos_val]
-        neg = self.scaled_w[self.scaled_w["target"] == neg_val]
+        # Weighting of regression density in sample space should be done here,
+        # if at all.
 
-        if sample_pos and sample_neg:
-            if neg.shape[0] < pos.shape[0]:
-                # Duplicate negative values until equal amount as positive.
-                while neg.shape[0] < pos.shape[0]:
-                    # Don't want to exceed post size
-                    con = neg[:pos.shape[0] - neg.shape[0]] if pos.shape[
-                        0] - neg.shape[0] < neg.shape[0] else neg
-                    neg = pd.concat([neg, con])
-            elif pos.shape[0] < neg.shape[0]:
-                # Duplicate positive values until equal amount as negative.
-                while pos.shape[0] < neg.shape[0]:
-                    # Don't want to exceed post size
-                    con = pos[:neg.shape[0] - pos.shape[0]] if neg.shape[
-                        0] - pos.shape[0] < pos.shape[0] else pos
-                    pos = pd.concat([pos, con])
+        # Weighted sample space needed if classification.
+        if problem_type == "class":
+            self.scaled_w["target"] = self.targets
+            pos = self.scaled_w[self.scaled_w["target"] == pos_val]
+            neg = self.scaled_w[self.scaled_w["target"] == neg_val]
 
-            print("Class balance fixed, Negatives:", neg.shape[0],
-                  ", Positives:", pos.shape[0])
-            self.scaled_w = pd.concat([pos, neg])
+            if sample_pos and sample_neg:
+                if neg.shape[0] < pos.shape[0]:
+                    # Duplicate negative values until equal amount as positive.
+                    while neg.shape[0] < pos.shape[0]:
+                        # Don't want to exceed post size
+                        con = neg[:pos.shape[0] - neg.shape[0]] if pos.shape[
+                            0] - neg.shape[0] < neg.shape[0] else neg
+                        neg = pd.concat([neg, con])
+                elif pos.shape[0] < neg.shape[0]:
+                    # Duplicate positive values until equal amount as negative.
+                    while pos.shape[0] < neg.shape[0]:
+                        # Don't want to exceed post size
+                        con = pos[:neg.shape[0] - pos.shape[0]] if neg.shape[
+                            0] - pos.shape[0] < pos.shape[0] else pos
+                        pos = pd.concat([pos, con])
 
-        if sample_pos and not sample_neg:
-            self.scaled_w = pos
-        if not sample_pos and sample_neg:
-            self.scaled_w = neg
-        if not sample_pos and not sample_neg:
-            raise Exception(
-                "At least one of sample_pos and sample_neg must be True")
+                print("Class balance fixed, Negatives:", neg.shape[0],
+                      ", Positives:", pos.shape[0])
+                self.scaled_w = pd.concat([pos, neg])
+
+            if sample_pos and not sample_neg:
+                self.scaled_w = pos
+            if not sample_pos and sample_neg:
+                self.scaled_w = neg
+            if not sample_pos and not sample_neg:
+                raise Exception(
+                    "At least one of sample_pos and sample_neg must be True"
+                    "for classification problems.")
 
         self.targets_w = self.scaled_w["target"]
         self.scaled_w = self.scaled_w.drop(["target"], axis=1)
@@ -94,6 +113,11 @@ class HighD:
         for i, col in enumerate(self.scaled.columns):
             self.min_max_vals[col] = [np.round(min_max[0][i], 2),
                                       np.round(min_max[1][i], 2)]
+
+        # If regression, targets are in scaled; need to be removed.
+        if problem_type == "reg":
+            self.targets = self.scaled["target"]
+            self.scaled = self.scaled.drop(["target"], axis=1)
 
     def density_estimate(self, f, n=100, k_dens=0.02, n_bins=50):
         # n_bins <= 1/k_dens as that the bucket resolution should not exceed
@@ -137,18 +161,18 @@ class HighD:
         else:
             to_plot = self.scaled[cols]
         pd.plotting.scatter_matrix(to_plot)
-        plt.grid(b=None)
+        plt.grid(False)
         plt.show()
 
-    def density_scatter(self, col):
-        self.D.plot.scatter(x="prediction", y=col)
+    def density_scatter(self, col, figsize=(8, 4)):
+        self.D.plot.scatter(x="prediction", y=col, figsize=figsize)
         plt.title(col + " value and certainty classification")
 
     def density_contour(self, col):
         self.D.plot.scatter(x="prediction", y=col)
         plt.title(col + " value and certainty classification")
 
-    def vis_1d(self, figsize=(16, 4)):
+    def vis_1d(self, figsize=(16, 8)):
         # Shifting everything down 0.5 makes 0 the uncertain value.
         D_mid_bins = copy.deepcopy(self.D_bins)
         for col in D_mid_bins[:-1]:
@@ -161,11 +185,11 @@ class HighD:
         return (max_val - min_val) * x + min_val
 
     def _break_text(self, txt):
-        ret = txt[:15]
-        if len(txt) >= 15:
-            ret += ("\n" + txt[15:30])
-        if len(txt) >= 30:
-            ret += ("\n" + txt[30:45])
+        ret = txt[:18]
+        if len(txt) >= 18:
+            ret += ("\n" + txt[18:36])
+        if len(txt) >= 36:
+            ret += ("\n" + txt[36:54])
         return ret
 
     def vis_1d_separate(self, title):
@@ -199,7 +223,7 @@ class HighD:
         fig.tight_layout(rect=[0, 0, 1, 0.96])
         plt.show()
 
-    def vis_2d(self, title):
+    def vis_2d(self, title=None):
         """
         """
         # Some thanks to https://stackoverflow.com/questions/7941207/
@@ -209,7 +233,7 @@ class HighD:
         cols = self.D_bins.columns
         n_cols = len(cols)
         fig, axes = plt.subplots(nrows=n_cols+1, ncols=n_cols+1,
-                                 figsize=(n_cols * 4.0, n_cols * 3.5))
+                                 figsize=(n_cols * 5.0, n_cols * 4.5))
 
         # Hide all ticks and labels, but set default to [0, 1].
         for ax in axes.flat:
@@ -229,7 +253,7 @@ class HighD:
             if i < n_cols and j < n_cols:
                 for x, y in [(i, j), (j, i)]:
                     # Use epsilon equal to resolution of the contour.
-                    clf = svm.SVR(gamma="scale", epsilon=res_sub[0])
+                    clf = svm.SVR(gamma="scale", epsilon=res_sub[1]/2)
                     sample = self.D.sample(10000)
                     clf.fit(sample[[cols[x], cols[y]]], sample["prediction"])
                     res_sub = np.linspace(0.0, 1.0, 21)
@@ -297,13 +321,8 @@ class HighD:
         # Add Y axis ticks to bottom left single density bar.
         axes[0, 1].yaxis.set_visible(True)
 
-        # Add label in bottom right.
-        axes[n_cols, n_cols].annotate("Class certainty.\n" +
-                                      "0.5 certain of True.\n" +
-                                      "0.0 no certainty\n" +
-                                      "-0.5 certain of False", (0.5, 0.5),
-                                      xycoords='axes fraction', ha='center',
-                                      va='center')
+        # Remove diagram in bottom right.
+        axes[n_cols, n_cols].set_visible(False)
 
         if title:
             fig.suptitle(title, size="26")

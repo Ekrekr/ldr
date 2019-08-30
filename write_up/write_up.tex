@@ -20,7 +20,7 @@
 
 \begin{document}
 \title{\huge \\Latent Dimensionality Reduction: An Algorithmic Method for Interpreting Black Box Models\\~\\
-\Large \emph{Draft}}
+\Large \emph{DRAFT - TENTATIVE}}
 \author{\emph{Elias Kassell, Fred Farrell}}
 \date{TODO 2019}
 \maketitle
@@ -35,7 +35,7 @@ TODO
 
 \section{Introduction}\label{Introduction}
 
-Black box models are notoriously difficult to interpret. This makes them impractical for situations where it is a necessity to understand why a model has made a decision, what changes to features can be changed to modify the result of the model in a particular way,  The TODO method allows a high dimensional space to be decomposed into its 
+Black box models are notoriously difficult to interpret. This makes them impractical for situations where it is a necessity to understand why a model has made a decision, what changes to features can be changed to modify the result of the model in a particular way,  The LDR method allows a high dimensional space to be decomposed into its 
 
 "Feature interpretation" here is used to describe understanding the effect a singular feature, or subset of features, has on the overall set of features used to train a model.
 
@@ -56,16 +56,96 @@ Some of the real world implications that interpreting black box models provides 
 \item Two options are available here, where single feature interpretation is easiest done with binning, while with multiple feature interpretation it is more sensible to use a regression SVM (support vector machine) [].
     \begin{enumerate}
         \item Binning: for each dimension, group points with resolution $r$, reducing the value of the bin to the mean prediction accross it.
-        \item SVM: for each dimension, train a regression SVM to estimate the prediction across the feature space. Use the SVM to make predictions across the space with resolution $r$.
+        \item SVM: for each dimension, train a regression SVM to estimate the prediction across the feature space. Use the SVM to make predictions across the space with double resolution, $r \times 2$.
     \end{enumerate}
 \end{enumerate}
 
 \section{Classification Example}
 
+The Wisonsin breast cancer dataset is used as it has 30 dimensions. The aim with the dataset is to classify the tumor as either malignant or benign. There are 569 samples in total, with 357 benign and 212 malignant.
 
+\subsection{Random Forest and OCSVM Interpolation}
+
+The 100 estimator RF (Random Forest) achieved an F1 score of 0.975, while the OCSVM was trained to interpret 10\% of training values as outliers. A value of 1.0 here indicates benign tumors, while 0.0 indicates malignant. All of the data is min-max scaled, a 0.7/0.3 training/testing data split is applied. LDR is then applied to the training data, integrating over 50,000 randomly selected points from the weighted kernel density of the sample space with a resolution of 1/50. Mean compactness, mean symmetry, and mean area are selected for visual inspection of their individual effect on the model's classification, which can be seen in figure \ref{fig:rf-ocsvm-matrix}.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{img/rf_ocsvm_matrix.png}
+\caption{RF with OCSVM interpolation. Blue indicates model certainty of benality, yellow of uncertainty, and red of malignancy. Lack of contour indicates a prediction outside the sample space. The bottom and right axis are the single dimension decomposition, while the middle countours represent the density of the cross dimensional decomposition.}
+\label{fig:rf-ocsvm-matrix}
+\end{figure}
+
+\subsection{Neural Network and OCSVM Interpolation}
+
+A 3 layer feed forward Neural Network (NN) was used; an input, a hidden layer where tanh is applied, and an output layer. Softmax is applied when making predictions, and the final certainty of the prediction is calculated by calculating the proportion of the largest weighted class out of all weightings. The NN was trained over 50,000 epochs and achieved an F1 score of 0.961, slightly worse than the RF. The NN was more binary with its decisions, 
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{img/nn_ocsvm_matrix.png}
+\caption{NN with OCSVM interpolation.}
+\label{fig:rf-ocsvm-matrix}
+\end{figure}
+
+\subsection{Analysis of Discrepancy}
+
+There is very little discrepancy between the two model, both of which have similar predictive success. However, random forests are widely regarded as more interpretable than neural networks []. The similarity of the two resultant visualizations is strong proof of the positive effect of LDR on model interpretability. The larger extreme value patches in the NN multi dimensional space are caused by the prediction density function interpreted by the final regression SVM being more steep to to the more binary classification of the SVM. This can be seen in the scatter plots of prediction certainties of the RF \ref{fig:rf-ocsvm-mean-symmetry-scatter} compared to the NN \ref{fig:nn-ocsvm-mean-symmetry-scatter}.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{img/rf_ocsvm_mean_symmetry.png}
+\caption{RF prediction certainty scatter plot of mean symmetry.}
+\label{fig:nn-ocsvm-mean-symmetry-scatter}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{img/nn_ocsvm_mean_symmetry.png}
+\caption{NN prediction certainty scatter plot of mean symmetry.}
+\label{fig:nn-ocsvm-mean-symmetry-scatter}
+\end{figure}
 
 \section{Regression Example}
 
+
+\section{Mathematical Explanation}
+
+Let $\Omega$ be the total sample space of input data. Let $X \in \Omega$ describe an input vector of data of length $n$, where each $x_i \in [0, 1]$ is the scaled value for feature $i$ in the vector.
+
+$$X = \{x_1, x_2, \ldots, x_n\}$$
+
+Let $Y$ be a single or multivariate output vector ($Y = y$ if single) where each $y_i$ is a predicted variable.
+
+$$Y = \{y_1, y_2, \ldots, y_n\}$$
+
+Let $s \in [0, 1]$ be a prediction of an outlier, s.t. 1 indicates an outlier and 0 not an outlier.
+
+Let $m$ describe a model as a function s.t. $m(X) = Y$, and $o$ describe an outlier classifier function s.t. $o(X) = s$
+
+$$m(X) = Y$$
+
+$$o(X) = s$$
+
+Let the outlier weighting and model prediction interpolation function $f$ be defined as
+
+$$f(X) = (m(X) - 0.5) \times o(X) + 0.5$$
+
+Let the resolution of a KDE bandwidth be $r$. The KDE function $g$ over a $n$ samples can therefore be defined as
+
+$$g(X) = \frac{1}{nr} \sum^n_{i=1} K \frac{x - x_i)}{h}$$
+
+which is effectively an implementation of the VEGAS algorithm for the Monte Carlo Integration function $I_\Omega$.
+
+Let the set of points drawn from $\Omega$ be $Q$, where $q \in {i*r}^{1/r}_0$ while $x_i$ are drawn from $g$. $Q$ can therefore be described as
+
+$$Q = {x_1, x_2, \ldots, q, \ldots, x_n}$$
+
+One option for model certainty and outlier interpolation estimation is therefore given by
+
+$$I_\Omega = \{\frac{1}{n} \sum^n_{i=1} f(Q(X))\}$$
+
+While an alternative method is to use an SVM, or alternative predictive model, to model the function describing the dimensionality reduced space model certainty. Let this model be defined as $h$, resulting in
+
+$$I_\Omega = h(Q(X))$$
 
 
 % \centering
@@ -86,6 +166,8 @@ Some of the real world implications that interpreting black box models provides 
 % \end{figure}
 
 \section{Conclusion}\label{Conclusion}
+
+This method will require either formal proof of efficacy or significant demonstration of reliable practical use before it should be used in the field. The ability to use this method on any dataset, removing the need for some visual exploratory work makes it a powerful tool.
 
 \printbibliography
 
