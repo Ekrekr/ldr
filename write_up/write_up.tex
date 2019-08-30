@@ -86,7 +86,7 @@ A 3 layer feed forward Neural Network (NN) was used; an input, a hidden layer wh
 \label{fig:rf-ocsvm-matrix}
 \end{figure}
 
-\subsection{Analysis of Discrepancy}
+\subsection{Analysis of Discrepancy Between RF and NN}
 
 There is very little discrepancy between the two model, both of which have similar predictive success. However, random forests are widely regarded as more interpretable than neural networks []. The similarity of the two resultant visualizations is strong proof of the positive effect of LDR on model interpretability. The larger extreme value patches in the NN multi dimensional space are caused by the prediction density function interpreted by the final regression SVM being more steep to to the more binary classification of the SVM. This can be seen in the scatter plots of prediction certainties of the RF \ref{fig:rf-ocsvm-mean-symmetry-scatter} compared to the NN \ref{fig:nn-ocsvm-mean-symmetry-scatter}.
 
@@ -105,6 +105,17 @@ There is very little discrepancy between the two model, both of which have simil
 \end{figure}
 
 \section{Regression Example}
+
+A similar method as with the classification was applied to the Boston House Price dataset. This dataset has 14 dimensions, where the target is to predict the house price based off of quantitative factors such as proximity to radial highways, age and per Nitric Oxide concentration.
+
+
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{img/reg_rf_ocsvm_matrix.png}
+\caption{Illumina QC Pipeline}
+\label{fig:reg-rf-ocsvm-matrix}
+\end{figure}
 
 
 \section{Mathematical Explanation}

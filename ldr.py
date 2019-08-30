@@ -172,13 +172,13 @@ class LDR:
         self.D.plot.scatter(x="prediction", y=col)
         plt.title(col + " value and certainty classification")
 
-    def vis_1d(self, figsize=(16, 8)):
+    def vis_1d(self, figsize=(16, 8), title=None):
         # Shifting everything down 0.5 makes 0 the uncertain value.
         D_mid_bins = copy.deepcopy(self.D_bins)
         for col in D_mid_bins[:-1]:
             D_mid_bins[col] = D_mid_bins[col] - 0.5
         D_mid_bins.plot.bar(xlim=(-0.15, 1.15), ylim=(-0.6, 0.6),
-                            title="Dimension certainty", figsize=figsize)
+                            title=title, figsize=figsize)
         plt.show()
 
     def _rescale(self, min_val, max_val, x):
@@ -192,7 +192,7 @@ class LDR:
             ret += ("\n" + txt[36:54])
         return ret
 
-    def vis_1d_separate(self, title):
+    def vis_1d_separate(self, title=None):
         rows = self.D_bins.columns
         n_rows = len(rows)
         colors = plt.get_cmap("Spectral")
