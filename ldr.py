@@ -6,13 +6,14 @@ Classifier Certainty Visualization.
 import pandas as pd
 import numpy as np
 import sklearn
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import copy
 import itertools
 import typing
 from sklearn.datasets import load_iris
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KernelDensity
@@ -98,7 +99,7 @@ class LDR:
                 self.scaled_w = pos
             if not sample_pos and sample_neg:
                 self.scaled_w = neg
-            if not sample_pos and not sample_neg:
+            if not pos_val and not neg_val:
                 raise Exception(
                     "At least one of sample_pos and sample_neg must be True"
                     "for classification problems.")
@@ -119,21 +120,25 @@ class LDR:
             self.targets = self.scaled["target"]
             self.scaled = self.scaled.drop(["target"], axis=1)
 
-    def density_estimate(self, f, n=100, k_dens=0.02, n_bins=50):
+    def density_estimate(self, f, n=50000, k_dens=0.04, n_bins=26):
         # n_bins <= 1/k_dens as that the bucket resolution should not exceed
         # that of the kernel density.
-        kernel = KernelDensity(k_dens).fit(self.scaled_w)
         self.n_bins = n_bins
 
-        # Draw random sample from the sample space and store.
+        kernel = KernelDensity(k_dens).fit(self.scaled_w)
+
+        # Draw random sample from the sample space and store, calculating
+        # prediction.
         self.D = pd.DataFrame(kernel.sample(n))
         self.D.columns = self.scaled.columns
-        prediction = f(self.D)
-        self.D["prediction"] = prediction
+        self.D["prediction"] = f(self.D)
 
-        self.select_1d_bins(n_bins=n_bins)
+        # Add actual prediction, for colouring when plotted in contour.
+        self.scaled_w_preds = f(self.scaled_w)
 
-    def select_1d_bins(self, cols: list=None, n_bins=50):
+        self.select_bins(n_bins=n_bins)
+
+    def select_bins(self, cols: list=None, n_bins=51):
         if not cols:
             cols = self.D.columns[:-1]
         self.n_bins = n_bins
@@ -226,8 +231,6 @@ class LDR:
     def vis_2d(self, title=None):
         """
         """
-        # Some thanks to https://stackoverflow.com/questions/7941207/
-        # is-there-a-function-to-make-scatterplot-matrices-in-matplotlib
         np.random.seed(42)
         colors = plt.get_cmap("Spectral")
         cols = self.D_bins.columns
@@ -252,9 +255,12 @@ class LDR:
             # Don't want to plot outer columns.
             if i < n_cols and j < n_cols:
                 for x, y in [(i, j), (j, i)]:
-                    # Use epsilon equal to resolution of the contour.
-                    clf = svm.SVR(gamma="scale", epsilon=res_sub[1]/2)
-                    sample = self.D.sample(10000)
+                    # Use epsilon equal to half the resolution of the contour.
+                    # clf = svm.SVR(gamma="scale", epsilon=res_sub[1]/2)
+                    clf = RandomForestRegressor(n_estimators=100, random_state=42)
+                    # Use a sample otherwise as training time increases
+                    # dramatically with more than 20,000 samples.
+                    sample = self.D.sample(15000)
                     clf.fit(sample[[cols[x], cols[y]]], sample["prediction"])
                     res_sub = np.linspace(0.0, 1.0, 21)
                     Xm, Ym = np.meshgrid(res_sub, res_sub)
@@ -262,6 +268,13 @@ class LDR:
                           for j in res_sub]
                     axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
                         -0.5, 0.5, 41), cmap="Spectral")
+                    # axes[x, y].scatter(self.scaled_w[cols[x]],
+                    #                    self.scaled_w[cols[y]],
+                    #                 #    c=colors(self.scaled_w_preds),
+                    #                    c="#ff0000",
+                    #                    marker="x",
+                    #                    alpha=0.75,
+                    #                    zorder=1)
 
         # Add bar charts as charts on bottom and right.
         for i, col in enumerate(cols):
