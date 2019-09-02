@@ -166,11 +166,11 @@ class LDR:
 
     def density_scatter(self, col, figsize=(8, 4)):
         self.D.plot.scatter(x="prediction", y=col, figsize=figsize)
-        plt.title(col + " value and certainty classification")
+        plt.title(col + " value and certainty")
 
     def density_contour(self, col):
         self.D.plot.scatter(x="prediction", y=col)
-        plt.title(col + " value and certainty classification")
+        plt.title(col + " value and certainty")
 
     def vis_1d(self, figsize=(16, 8), title=None):
         # Shifting everything down 0.5 makes 0 the uncertain value.
