@@ -120,7 +120,7 @@ class LDR:
             self.targets = self.scaled["target"]
             self.scaled = self.scaled.drop(["target"], axis=1)
 
-    def density_estimate(self, f, n=50000, k_dens=0.04, n_bins=26):
+    def density_estimate(self, f, n=50000, k_dens=0.02, n_bins=51):
         # n_bins <= 1/k_dens as that the bucket resolution should not exceed
         # that of the kernel density.
         self.n_bins = n_bins
@@ -238,16 +238,25 @@ class LDR:
         fig, axes = plt.subplots(nrows=n_cols+1, ncols=n_cols+1,
                                  figsize=(n_cols * 5.0, n_cols * 4.5))
 
-        # Hide all ticks and labels, but set default to [0, 1].
+        # Hide all ticks and labels.
         for ax in axes.flat:
-            ax.xaxis.set_visible(False)
-            ax.yaxis.set_visible(False)
-            ax.set_xlim(0.0, 1.0)
-            ax.set_ylim(0.0, 1.0)
+            pass
+            # ax.xaxis.set_visible(False)
+            # ax.yaxis.set_visible(False)
+            # ax.set_xlim(0.0, 1.0)
+            # ax.set_ylim(0.0, 1.0)
 
         # Calculate the general [0, 1] meshgrid for contours.
-        res_sub = np.linspace(0.0, 1.0, len(self.D_bins))
-        Xm, Ym = np.meshgrid(res_sub, res_sub)
+        res_sub = np.linspace(0.0, 1.0, self.n_bins - 1)
+
+        # Find mid points for each bin, for selecting index of bin.
+        mid_points = np.array([i.mid for i in self.D_bins.index])
+
+        # Finds nearest point of a value in an array.
+        def find_nearest(array, value):
+            array = np.asarray(array)
+            idx = (np.abs(array - value)).argmin()
+            return array[idx]
 
         # Plot the data.
         # TODO: Optimise this to not repeat 2D contours.
@@ -255,26 +264,39 @@ class LDR:
             # Don't want to plot outer columns.
             if i < n_cols and j < n_cols:
                 for x, y in [(i, j), (j, i)]:
-                    # Use epsilon equal to half the resolution of the contour.
-                    # clf = svm.SVR(gamma="scale", epsilon=res_sub[1]/2)
-                    clf = RandomForestRegressor(n_estimators=100, random_state=42)
-                    # Use a sample otherwise as training time increases
-                    # dramatically with more than 20,000 samples.
-                    sample = self.D.sample(15000)
-                    clf.fit(sample[[cols[x], cols[y]]], sample["prediction"])
-                    res_sub = np.linspace(0.0, 1.0, 21)
-                    Xm, Ym = np.meshgrid(res_sub, res_sub)
-                    Zm = [[clf.predict([[i, j]])[0] - 0.5 for i in res_sub]
-                          for j in res_sub]
+                    min_x_val = self.min_max_vals[cols[x]]["min"]
+                    max_x_val = self.min_max_vals[cols[x]]["max"]
+                    min_y_val = self.min_max_vals[cols[y]]["min"]
+                    max_y_val = self.min_max_vals[cols[y]]["max"]
+                    # Unscale limits for axis.
+                    Xm, Ym = np.meshgrid(
+                        np.linspace(min_x_val, max_x_val, self.n_bins - 1),
+                        np.linspace(min_y_val, max_y_val, self.n_bins - 1))
+                    # Create an entry matrix.
+                    Zm = [[[] for i in res_sub] for j in res_sub]
+                    # Go through each prediction based on KDE and put into
+                    # nearest bin.
+                    for d, d_val in self.D.iterrows():
+                        col1_ind = int(find_nearest(mid_points, d_val[
+                            cols[x]]) * (self.n_bins - 1) - 0.5)
+                        col2_ind = int(find_nearest(mid_points, d_val[
+                            cols[y]]) * (self.n_bins - 1) - 0.5)
+                        Zm[col1_ind][col2_ind].append(d_val["prediction"])
+                    # Take the mean of value, move down to mid at 0, make
+                    # outliers 100 so not drawn.
+                    Zm = [[np.mean(Zm[i][j]) - 0.5 if len(Zm[i][j]) > 0
+                           else 100 for i in range(self.n_bins - 1)] for j in
+                          range(self.n_bins - 1)]
                     axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
                         -0.5, 0.5, 41), cmap="Spectral")
-                    # axes[x, y].scatter(self.scaled_w[cols[x]],
-                    #                    self.scaled_w[cols[y]],
-                    #                 #    c=colors(self.scaled_w_preds),
-                    #                    c="#ff0000",
-                    #                    marker="x",
-                    #                    alpha=0.75,
-                    #                    zorder=1)
+                    axes[x, y].scatter(self.df[cols[x]],
+                                       self.df[cols[y]], c="#000000",
+                                       s=3, marker="o", alpha=0.75, zorder=1)
+                    axes[x, y].set_xlim(min_x_val, max_x_val)
+                    axes[x, y].set_ylim(min_y_val, max_y_val)
+                    axes[x, y].set_xticks(np.linspace(min_x_val, max_x_val, 3))
+                    axes[x, y].set_yticks(np.linspace(min_y_val, max_y_val, 3))
+                    axes[x, y].grid(False)
 
         # Add bar charts as charts on bottom and right.
         for i, col in enumerate(cols):
@@ -296,11 +318,9 @@ class LDR:
             axes[i, n_cols].set_xlim(min_val, max_val)
             axes[i, n_cols].set_xticks(np.linspace(min_val, max_val, 3))
             axes[i, n_cols].grid(False)
-            axes[i, n_cols].xaxis.set_visible(True)
-            axes[i, n_cols].yaxis.set_visible(True)
             axes[i, n_cols].yaxis.tick_right()
-            axes[i, n_cols].yaxis.set_label_position("right")
-            axes[i, n_cols].set_ylabel(self._break_text(col))
+            # axes[i, n_cols].yaxis.set_label_position("right")
+            axes[i, n_cols].set_xlabel(self._break_text(col))
 
             # Add density bar charts as right row.
             axes[n_cols, i].barh(x, y, color=c,
@@ -310,29 +330,19 @@ class LDR:
             axes[n_cols, i].set_ylim(min_val, max_val)
             axes[n_cols, i].set_yticks(np.linspace(min_val, max_val, 3))
             axes[n_cols, i].grid(False)
-            axes[n_cols, i].yaxis.set_visible(True)
-            axes[n_cols, i].xaxis.set_visible(True)
-            axes[n_cols, i].set_xlabel(self._break_text(col))
+            axes[n_cols, i].set_ylabel(self._break_text(col))
 
             # Add labels of variables with scaled interval in diagonal.
-            axes[i, i].annotate(self._break_text(col), (0.5, 0.5),
-                                xycoords='axes fraction', ha='center',
-                                va='center')
+            # axes[i, i].annotate(self._break_text(col), (0.5, 0.5),
+            #                     xycoords='axes fraction', ha='center',
+            #                     va='center')
+            # axes[i, i].xaxis.set_visible(False)
+            # axes[i, i].yaxis.set_visible(False)
+            axes[i, i].set_visible(False)
             # axes[i, i].annotate("Mean Certainty:\n" + str(np.round(np.mean(
             #     self.D_bins[col] - 0.5), 3)), (0.5, 0.5),
             #     xycoords='axes fraction', ha='center', va='center')
             axes[i, i].grid(False)
-
-        # Add axis to left and bottom contours.
-        for i, _ in enumerate(cols[:-1]):
-            axes[i + 1, 0].yaxis.set_visible(True)
-            axes[n_cols-1, i].xaxis.set_visible(True)
-
-        # Add X axis ticks to bottom right single density bar.
-        axes[n_cols - 1, n_cols].xaxis.set_visible(True)
-
-        # Add Y axis ticks to bottom left single density bar.
-        axes[0, 1].yaxis.set_visible(True)
 
         # Remove diagram in bottom right.
         axes[n_cols, n_cols].set_visible(False)
