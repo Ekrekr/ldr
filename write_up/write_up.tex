@@ -1,5 +1,5 @@
 \documentclass[a4paper, twocolumn]{article}
-\usepackage[margin=0.8in]{geometry}
+\usepackage[margin=0.7in]{geometry}
 \usepackage{lmodern}
 \usepackage{caption,setspace}
 \usepackage{amssymb,amsmath}
@@ -41,12 +41,12 @@ Thanks to Illumina\textsuperscript{\textregistered} for supporting this research
 
 \section{Introduction}\label{Introduction}
 
-When training a model to make predictions in situations where interpretability is not required, the main goal is to maximise predictive accuracy \cite{two-cultures}. Often black box models have a higher predictive accuracy than more interpretable solutions, particularly in higher dimensional or more complex problems \cite{deep-learning}. Because of the uninterpretability of these models, they become impractical for situations where it is a necessity to understand why a model has chosen a particular output as its prediction, and what effect changes to values of the input features will have on the output of the model.
+When training a model to make predictions in situations where interpretability is not required, the main goal is to maximise predictive accuracy \cite{breiman2001statistical}. Often black box models have a higher predictive accuracy than more interpretable solutions, particularly in higher dimensional or more complex problems \cite{schmidhuber2015deep}. Because of the uninterpretability of these models, they become impractical for situations where it is a necessity to understand why a model has chosen a particular output as its prediction, and what effect changes to values of the input features will have on the output of the model.
 
 Some examples of uses of model interpretation in real world applications include
 
 \begin{enumerate}
-\item Understanding the quality of a systems current understanding \cite{end-user-ml}. 
+\item Understanding the quality of a systems current understanding \cite{amershi2011effective}. 
 
 \item Interpreting how the value of a feature, or subset of features, affects a model's prediction (henceforth referred to as "feature interpretation"). For example, in a medical setting this interpretation can be used for suggesting the relation between features and a diagnosis. In another example, for manufacturing this interpretation can provide target values for the underlying processes involved in quality of produce.
 
@@ -56,26 +56,26 @@ Some examples of uses of model interpretation in real world applications include
 \section{The Algorithm}
 
 \begin{enumerate}
-\item Normalize the original data so it falls into [0, 1] intervals.
-\item Train a predictive model on the normalized data.
-\item Train a OCSVM (One Class Support Vector Machine) \cite{ocsvm}, or an alternative model for detecting outliers, on the normalized data.
-\item Create a KDE (kernel density estimate) \cite{kde} of the training points with a bandwidth equal to some resoltuion $r$. Optional: to improve the visualization, normalize the training to produce a constant density output.
+\item Scale the original data so it falls into [0, 1] intervals.
+\item Train a predictive model on the scaled data.
+\item Train a OCSVM (One Class Support Vector Machine) \cite{scholkopf2001estimating}, or an alternative model for detecting outliers, on the scaled data.
+\item Create a KDE (kernel density estimate) \cite{parzen1962estimation} of the training points with a bandwidth equal to some resoltuion $r$ (number of points in the latent dimensional subspace). Optional: to improve the visualization, normalize the training to produce a constant density output.
 \item Sample $n$ new points from the kernel density, using both classifiers to make predictions of each point. Weight the prediction according to the outlier classifier, where outliers have no model certainty in the prediction at that point.
 \item Bin the samples according to regular intervals. For each dimension, group points with resolution $r$, reducing the value of the bin to the mean prediction across it.
 \end{enumerate}
 
 \section{Classification Example}
 
-The Wisonsin breast cancer dataset \cite{breast-cancer} (provided by scikit \cite{scikit-learn}) is used as it has 31 dimensions, a significant number. The aim with the dataset is to classify the tumor as either malignant or benign. There are 569 samples in total, with 357 benign and 212 malignant.
+The Wisonsin breast cancer dataset \cite{breastcancer} (provided by scikit \cite{pedregosa2011scikit}) is used as it has 31 dimensions, a significant number. The aim with the dataset is to classify the tumor as either malignant or benign. There are 569 samples in total, with 357 benign and 212 malignant.
 
 \subsection{Random Forest and OCSVM Interpolation}
 
-The 100 estimator RF (Random Forest) \cite{random-forest} achieved an F1 score of 0.975, while the OCSVM was trained to interpret 10\% of training values as outliers. Benign was selected as the positive category, resulting in a value of 1.0 indicating benign tumors and 0.0 inidicating malignant. All of the data is min-max scaled, then a 0.7/0.3 training/testing data split is applied. LDR is applied to the training data, integrating over 50,000 randomly selected points from the weighted kernel density of the sample space with a resolution of 1/50. Mean symmetry and mean area are selected for visual inspection of their individual effect on the model's classification. The certainty of the RF is shown in figure \ref{fig:interp-rf}, while the certianty of the OCSVM is shown in figure \ref{fig:interp-ocsvm}. The final combined certainty is shown in figure \ref{fig:interp-rf-ocsvm}.
+The 100 estimator RF (Random Forest) \cite{liaw2002classification} achieved an F1 score of 0.975, while the OCSVM was trained to interpret 10\% of training values as outliers. Benign was selected as the positive category, resulting in a value of 1.0 indicating benign tumors and 0.0 inidicating malignant. All of the data is min-max scaled, then a 0.7/0.3 training/testing data split is applied. LDR is applied to the training data, integrating over 50,000 randomly selected points from the weighted kernel density of the sample space with a resolution of 50. Mean symmetry and mean area are selected for visual inspection of their individual effect on the model's classification. The certainty of the RF is shown in figure \ref{fig:interp-rf}, while the certianty of the OCSVM is shown in figure \ref{fig:interp-ocsvm}. The final combined certainty is shown in figure \ref{fig:interp-rf-ocsvm}.
 
 \begin{figure}
 \centering
 \includegraphics[width=0.8\columnwidth]{img/interp_rf.png}
-\caption{RF prediction certainty, where red indicates certaincy of malignancy, blue certainty of benality, and yellow a general lack of certainty. A lack of drawn contour indicates no samples were drawn from the sample space, as the kernel density was too low in those areas. The black dots are the locations of the samples. The top and left axis are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars.}
+\caption{RF prediction certainty, where red indicates certaincy of malignancy, blue certainty of benality, and yellow a general lack of certainty. A lack of drawn contour indicates no samples were drawn from the sample space, as the kernel density was too low in those areas. The black dots are the locations of the samples. The top and left axis are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars. The axis are labelled with the relative input minumum and maximum values used for scaling.}
 \label{fig:interp-rf}
 \end{figure}
 
@@ -106,7 +106,7 @@ A 3 layer feed forward Neural Network (NN) was used (via pytorch \cite{paszke201
 
 \subsection{Analysis of Discrepancy Between RF and NN}
 
-There is very little discrepancy between the two LDR representations, both of which have similar predictive success. This is significant because random forests are widely regarded as more interpretable than neural networks \cite{random-forest-int}, but LDR represents them both in an equally interpretable fashion. The only visual difference between the two LDR representation arises from the NN tending to be more certain of its classifications. This can be seen in the scatter plots of prediction certainties for mean symmetry of the RF in figure \ref{fig:rf-ocsvm-mean-symmetry-scatter}m compared to the NN in figure \ref{fig:nn-ocsvm-mean-symmetry-scatter}.
+There is very little discrepancy between the two LDR representations, both of which have similar predictive success. This is significant because random forests are widely regarded as more interpretable than neural networks \cite{song2013random}, but LDR represents them both in an equally interpretable fashion. The only visual difference between the two LDR representation arises from the NN tending to be more certain of its classifications. This can be seen in the scatter plots of prediction certainties for mean symmetry of the RF in figure \ref{fig:rf-ocsvm-mean-symmetry-scatter}m compared to the NN in figure \ref{fig:nn-ocsvm-mean-symmetry-scatter}.
 
 \begin{figure}
 \centering
@@ -124,7 +124,7 @@ There is very little discrepancy between the two LDR representations, both of wh
 
 \section{Regression Example}
 
-A similar method as with the classification was applied to the Boston House Price dataset \cite{boston-house} (also provided by scikit \cite{scikit-learn}). This dataset has 14 dimensions, where the target is to predict the house price based off of quantitative factors such as age of the house, the number of rooms, and the per capita crime rate of the time within which is situated. Some interesting relations are made immediately available from the LDR, shown in figure \ref{fig:reg-rf-ocsvm-matrix}, are
+A similar method as with the classification was applied to the Boston House Price dataset \cite{bostonhouse} (also provided by scikit). This dataset has 14 dimensions, where the target is to predict the house price based off of quantitative factors such as age of the house, the number of rooms, and the per capita crime rate of the time within which is situated. Some interesting relations are made immediately available from the LDR, shown in figure \ref{fig:reg-rf-ocsvm-matrix}, are
 
 \begin{figure}
 \centering
@@ -151,6 +151,68 @@ The prediction certainty prior to be binning can be seen in figure \ref{fig:reg-
 \end{figure}
 
 \section{Mathematical Explanation}
+
+\subsection{Feature Space and Subsets Definition}
+
+Let a scaled feature space $\Omega$ for features $w = \{0, 1, \ldots, l\}$ be described as
+
+$$\Omega =
+\begin{bmatrix}
+{\omega_1 = \{d_{1, 1}, d_{2, 1}, \ldots, d_{l, 1}\}} \\
+{\omega_2 = \{d_{1, 2}, d_{2, 2}, \ldots, d_{l, 2}\}} \\
+\vdots \\
+{\omega_m = \{d_{1, m}, d_{2, m}, \ldots, d_{l, m}\}}
+\end{bmatrix}
+$$
+
+where $d_{i, j} \in [0,1]$, $l$ is the number of features and $m$ is the number of points (samples) in the feature space.
+
+The subset $X$ of values for features $t \subset w$ which are being used to predict a set $Y$ of features $l - t = \{i, (i \in w) \land (i \notin t)\}$ are therefore defined as
+
+$$X =
+\begin{bmatrix}
+{x_1 = \{d_{1, 1}, d_{2, 1}, \ldots, d_{|t|, 1}\}} \\
+{x_2 = \{d_{1, 2}, d_{2, 2}, \ldots, d_{|t|, 2}\}} \\
+\vdots \\
+{x_m = \{d_{1, m}, d_{2, m}, \ldots, d_{|t|, m}\}}
+\end{bmatrix}
+$$
+
+$$Y =
+\begin{bmatrix}
+{y_1 = \{d_{1, 1}, d_{2, 1}, \ldots, d_{|l-t|, 1}\}} \\
+{y_2 = \{d_{1, 2}, d_{2, 2}, \ldots, d_{|l-t|, 2}\}} \\
+\vdots \\
+{y_m = \{d_{1, m}, d_{2, m}, \ldots, d_{|l-t|, m}\}}
+\end{bmatrix}
+$$
+
+\subsection{Model and Outlier Prediction Interpolation}
+
+Let $p$ describe a model prediction mapping, such that $p(x_i) \approx y_i$. Let $o$ describe an outlier prediction mapping such that $o(x_i) = [1, 0]$, where $0$ indicates complete certainty of $x_i$ being an outlier and $1$ complete certainty of $x_i$ not being an outlier. Let outlier weighting and model prediction interpolation function $f$ be defined as
+
+$$f(x_i) = (p(x_i) - 0.5) \times o(x_i) + 0.5$$
+
+\subsection{KDE Sample Drawing}
+
+The KDE with bandwidth $1/r$ can be estimated and $n$ samples drawn from it in unison by drawing from the individual weighting each point $x \in X$ contributes to the kernel density. This is done by randomly selecting $n$ points from $X$ and drawing distributed points $q \sim N(x, 1/r)$. This sampling is equivalent to the VEGAS algorithm for the subsequent monte carlo integration \cite{lepage1978new}. The set of samples $Q$ can therefore be described as
+
+$$Q = \{q_1, q_2, \ldots, q_n\}$$
+
+Note that the VEGAS algorithm relies on the assumption that the sample space is univariate and i.i.d, resulting in LDR only successfully interpreting samples from the same feature space.
+
+\subsection{Monte Carlo Integration Over Feature Subsets}
+
+Let $e$ be the set of intervals describing a single dimensional set of bins, such that
+
+$$e = \{[0, \frac{1}{r}], (\frac{1}{r}, \frac{2}{r}], \ldots, (\frac{r-1}{r}, 1]\}$$
+
+Let $b \subset t$ describe the features being interpreted. Let $E$ describe the $|b|$ multivariate permutations of bin pairs, such that
+
+$$E = perm(e_1, e_2, \ldots, e_|b|)$$
+
+
+\section{Old Mathematical Explanation}
 
 Let $\Omega$ be the total sample space of input data. Let $X \in \Omega$ describe an input vector of data of length $n$, where each $x_i \in [0, 1]$ is the scaled value for feature $i$ in the vector.
 

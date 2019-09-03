@@ -1995,33 +1995,7 @@
     <bcf:datasource type="file" datatype="bibtex">write_up.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
-    <bcf:citekey order="1">two-cultures</bcf:citekey>
-    <bcf:citekey order="2">deep-learning</bcf:citekey>
-    <bcf:citekey order="3">end-user-ml</bcf:citekey>
-    <bcf:citekey order="4">ocsvm</bcf:citekey>
-    <bcf:citekey order="5">kde</bcf:citekey>
-    <bcf:citekey order="6">breast-cancer</bcf:citekey>
-    <bcf:citekey order="7">scikit-learn</bcf:citekey>
-    <bcf:citekey order="8">random-forest</bcf:citekey>
-    <bcf:citekey order="9">paszke2017automatic</bcf:citekey>
-    <bcf:citekey order="10">random-forest-int</bcf:citekey>
-    <bcf:citekey order="11">boston-house</bcf:citekey>
-    <bcf:citekey order="12">scikit-learn</bcf:citekey>
-  </bcf:section>
-  <!-- SORTING TEMPLATES -->
-  <bcf:sortingtemplate name="none">
-    <bcf:sort order="1">
-      <bcf:sortitem order="1">citeorder</bcf:sortitem>
-    </bcf:sort>
-  </bcf:sortingtemplate>
-  <!-- DATALISTS -->
-  <bcf:datalist section="0"
-                name="none/global//global/global"
-                type="entry"
-                sortingtemplatename="none"
-                sortingnamekeytemplatename="global"
-                labelprefix=""
-                uniquenametemplatename="global"
-                labelalphanametemplatename="global">
-  </bcf:datalist>
-</bcf:controlfile>
+    <bcf:citekey order="1">breiman2001statistical</bcf:citekey>
+    <bcf:citekey order="2">schmidhuber2015deep</bcf:citekey>
+    <bcf:citekey order="3">amershi2011effective</bcf:citekey>
+    <bcf:citekey order="4">scholkopf2001

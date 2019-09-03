@@ -1,15 +1,15 @@
 [0] Config.pm:304> INFO - This is Biber 2.12
 [0] Config.pm:307> INFO - Logfile is 'write_up.blg'
-[50] biber-darwin:315> INFO - === Tue Sep  3, 2019, 13:59:42
-[75] Biber.pm:371> INFO - Reading 'write_up.bcf'
-[161] Biber.pm:889> INFO - Found 11 citekeys in bib section 0
-[175] Biber.pm:4093> INFO - Processing section 0
-[187] Biber.pm:4254> INFO - Looking for bibtex format file 'write_up.bib' for section 0
-[189] bibtex.pm:1523> INFO - LaTeX decoding ...
-[203] bibtex.pm:1340> INFO - Found BibTeX data source 'write_up.bib'
-[287] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[287] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[287] Biber.pm:3921> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
-[288] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
-[302] bbl.pm:636> INFO - Writing 'write_up.bbl' with encoding 'UTF-8'
-[308] bbl.pm:739> INFO - Output to write_up.bbl
+[39] biber-darwin:315> INFO - === Tue Sep  3, 2019, 16:48:17
+[60] Biber.pm:371> INFO - Reading 'write_up.bcf'
+[158] Biber.pm:889> INFO - Found 12 citekeys in bib section 0
+[171] Biber.pm:4093> INFO - Processing section 0
+[182] Biber.pm:4254> INFO - Looking for bibtex format file 'write_up.bib' for section 0
+[184] bibtex.pm:1523> INFO - LaTeX decoding ...
+[214] bibtex.pm:1340> INFO - Found BibTeX data source 'write_up.bib'
+[313] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[313] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[314] Biber.pm:3921> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
+[314] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
+[322] bbl.pm:636> INFO - Writing 'write_up.bbl' with encoding 'UTF-8'
+[327] bbl.pm:739> INFO - Output to write_up.bbl
