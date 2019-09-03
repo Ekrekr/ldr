@@ -235,7 +235,7 @@ class LDR:
         colors = plt.get_cmap("Spectral")
         cols = self.D_bins.columns
         n_cols = len(cols)
-        fig, axes = plt.subplots(nrows=n_cols+1, ncols=n_cols+1,
+        fig, axes = plt.subplots(nrows=n_cols, ncols=n_cols,
                                  figsize=(n_cols * 5.0, n_cols * 4.5))
 
         # Hide all ticks and labels.
@@ -258,94 +258,118 @@ class LDR:
             idx = (np.abs(array - value)).argmin()
             return array[idx]
 
-        # Plot the data.
-        # TODO: Optimise this to not repeat 2D contours.
-        for i, j in zip(*np.triu_indices_from(axes, k=1)):
-            # Don't want to plot outer columns.
-            if i < n_cols and j < n_cols:
-                for x, y in [(i, j), (j, i)]:
-                    min_x_val = self.min_max_vals[cols[x]]["min"]
-                    max_x_val = self.min_max_vals[cols[x]]["max"]
-                    min_y_val = self.min_max_vals[cols[y]]["min"]
-                    max_y_val = self.min_max_vals[cols[y]]["max"]
-                    # Unscale limits for axis.
-                    Xm, Ym = np.meshgrid(
-                        np.linspace(min_x_val, max_x_val, self.n_bins - 1),
-                        np.linspace(min_y_val, max_y_val, self.n_bins - 1))
-                    # Create an entry matrix.
-                    Zm = [[[] for i in res_sub] for j in res_sub]
-                    # Go through each prediction based on KDE and put into
-                    # nearest bin.
-                    for d, d_val in self.D.iterrows():
-                        col1_ind = int(find_nearest(mid_points, d_val[
-                            cols[x]]) * (self.n_bins - 1) - 0.5)
-                        col2_ind = int(find_nearest(mid_points, d_val[
-                            cols[y]]) * (self.n_bins - 1) - 0.5)
-                        Zm[col1_ind][col2_ind].append(d_val["prediction"])
-                    # Take the mean of value, move down to mid at 0, make
-                    # outliers 100 so not drawn.
-                    Zm = [[np.mean(Zm[i][j]) - 0.5 if len(Zm[i][j]) > 0
-                           else 100 for i in range(self.n_bins - 1)] for j in
-                          range(self.n_bins - 1)]
-                    axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
-                        -0.5, 0.5, 41), cmap="Spectral")
-                    axes[x, y].scatter(self.df[cols[x]],
-                                       self.df[cols[y]], c="#000000",
-                                       s=3, marker="o", alpha=0.75, zorder=1)
-                    axes[x, y].set_xlim(min_x_val, max_x_val)
-                    axes[x, y].set_ylim(min_y_val, max_y_val)
-                    axes[x, y].set_xticks(np.linspace(min_x_val, max_x_val, 3))
-                    axes[x, y].set_yticks(np.linspace(min_y_val, max_y_val, 3))
-                    axes[x, y].grid(False)
+        # Get coords for different sections of the triangle.
+        top_left_co = [(n_cols - (x + 1), y + 1)
+                       for x, y in zip(*np.tril_indices(n_cols - 1))]
+        bot_right_co = [(x + 2, n_cols - y - 1)
+                        for x, y in zip(*np.tril_indices(n_cols - 2))]
+        left_row = [(0, i + 1) for i in range(n_cols - 1)]
+        top_row = [(i + 1, 0) for i in range(n_cols - 1)]
+        print("TL:", top_left_co)
+        print("BR:", bot_right_co)
+        print("LR:", left_row)
+        print("TR:", top_row)
 
-        # Add bar charts as charts on bottom and right.
-        for i, col in enumerate(cols):
+        # Plot contours in top right triangle coordinates.
+        for x, y in top_left_co:
+            print(x, y)
+            x_col = cols[x - 1]
+            y_col = cols[n_cols - y]
+            print(x_col, y_col)
+            min_x_val = self.min_max_vals[x_col]["min"]
+            max_x_val = self.min_max_vals[x_col]["max"]
+            min_y_val = self.min_max_vals[y_col]["min"]
+            max_y_val = self.min_max_vals[y_col]["max"]
+            # Unscale limits for axis.
+            Xm, Ym = np.meshgrid(
+                np.linspace(min_x_val, max_x_val, self.n_bins - 1),
+                np.linspace(min_y_val, max_y_val, self.n_bins - 1))
+            # Create an entry matrix.
+            Zm = [[[] for i in res_sub] for j in res_sub]
+            # Go through each prediction based on KDE and put into
+            # nearest bin.
+            for d, d_val in self.D.iterrows():
+                col1_ind = int(find_nearest(mid_points, d_val[
+                    x_col]) * (self.n_bins - 1) - 0.5)
+                col2_ind = int(find_nearest(mid_points, d_val[
+                    y_col]) * (self.n_bins - 1) - 0.5)
+                Zm[col1_ind][col2_ind].append(d_val["prediction"])
+            # Take the mean of value, move down to mid at 0, make
+            # outliers 100 so not drawn.
+            Zm = [[np.mean(Zm[i][j]) - 0.5 if len(Zm[i][j]) > 0
+                  else 100 for i in range(self.n_bins - 1)] for j in
+                  range(self.n_bins - 1)]
+            axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
+                -0.5, 0.5, 41), cmap="Spectral")
+            axes[x, y].scatter(self.df[x_col],
+                               self.df[y_col], c="#000000",
+                               s=3, marker="o", alpha=0.75, zorder=1)
+            axes[x, y].set_xlim(min_x_val, max_x_val)
+            axes[x, y].set_ylim(min_y_val, max_y_val)
+            axes[x, y].set_xticks(np.linspace(min_x_val, max_x_val, 3))
+            axes[x, y].set_yticks(np.linspace(min_y_val, max_y_val, 3))
+            axes[x, y].yaxis.tick_right()
+            axes[x, y].yaxis.set_label_position("right")
+            axes[x, y].grid(False)
+
+        # Add bar charts as charts on top row.
+        for x, y in top_row:
+            print(x, y)
+            col = cols[x - 1]
+            print(col)
             min_val = self.min_max_vals[col]["min"]
             max_val = self.min_max_vals[col]["max"]
 
             # Select mid values of intervals for x values.
             bar_vals = self.D_bins[col] - 0.5
-            x = [self._rescale(min_val, max_val, i.mid)
-                 for i in np.array(bar_vals.keys())]
-            y = bar_vals.values
-            c = [colors(i+0.5) for i in y]
+            x_vals = [self._rescale(min_val, max_val, i.mid)
+                      for i in np.array(bar_vals.keys())]
+            y_vals = bar_vals.values
+            c = [colors(i+0.5) for i in y_vals]
 
-            # Add density bar charts as bottom row.
-            axes[i, n_cols].bar(x=x, height=y, color=c,
-                                width=(max_val - min_val) / len(x) * 1.05)
-            axes[i, n_cols].set_ylim(-0.5, 0.5)
-            axes[i, n_cols].set_yticks(np.arange(-0.5, 0.75, 0.25))
-            axes[i, n_cols].set_xlim(min_val, max_val)
-            axes[i, n_cols].set_xticks(np.linspace(min_val, max_val, 3))
-            axes[i, n_cols].grid(False)
-            axes[i, n_cols].yaxis.tick_right()
-            # axes[i, n_cols].yaxis.set_label_position("right")
-            axes[i, n_cols].set_xlabel(self._break_text(col))
+            axes[x, y].bar(x=x_vals, height=y_vals, color=c,
+                           width=(max_val - min_val) / len(x_vals) * 1.05)
+            axes[x, y].set_ylim(-0.5, 0.5)
+            axes[x, y].set_yticks(np.arange(-0.5, 0.75, 0.25))
+            axes[x, y].set_xlim(min_val, max_val)
+            axes[x, y].set_xticks(np.linspace(min_val, max_val, 3))
+            axes[x, y].grid(False)
+            # axes[i, y].yaxis.set_label_position("right")
+            axes[x, y].set_xlabel(self._break_text(col), fontsize=18)
+
+        # Add bar charts on left row.
+        for x, y in left_row:
+            print(x, y)
+            col = cols[n_cols - y]
+            print(col)
+            min_val = self.min_max_vals[col]["min"]
+            max_val = self.min_max_vals[col]["max"]
+
+            # Select mid values of intervals for x values.
+            bar_vals = self.D_bins[col] - 0.5
+            x_vals = [self._rescale(min_val, max_val, i.mid)
+                      for i in np.array(bar_vals.keys())]
+            y_vals = bar_vals.values
+            c = [colors(i+0.5) for i in y_vals]
 
             # Add density bar charts as right row.
-            axes[n_cols, i].barh(x, y, color=c,
-                                 height=(max_val - min_val) / len(x) * 1.05)
-            axes[n_cols, i].set_xlim(-0.5, 0.5)
-            axes[n_cols, i].set_xticks(np.arange(-0.5, 0.75, 0.25))
-            axes[n_cols, i].set_ylim(min_val, max_val)
-            axes[n_cols, i].set_yticks(np.linspace(min_val, max_val, 3))
-            axes[n_cols, i].grid(False)
-            axes[n_cols, i].set_ylabel(self._break_text(col))
+            axes[x, y].barh(x_vals, y_vals, color=c,
+                            height=(max_val - min_val) / len(x_vals) * 1.05)
+            axes[x, y].set_xlim(-0.5, 0.5)
+            axes[x, y].set_xticks(np.arange(-0.5, 0.75, 0.25))
+            axes[x, y].set_ylim(min_val, max_val)
+            axes[x, y].set_yticks(np.linspace(min_val, max_val, 3))
+            axes[x, y].yaxis.tick_right()
+            axes[x, y].yaxis.set_label_position("right")
+            axes[x, y].grid(False)
+            axes[x, y].set_ylabel(self._break_text(col), fontsize=18)
 
-            # Add labels of variables with scaled interval in diagonal.
-            # axes[i, i].annotate(self._break_text(col), (0.5, 0.5),
-            #                     xycoords='axes fraction', ha='center',
-            #                     va='center')
-            # axes[i, i].xaxis.set_visible(False)
-            # axes[i, i].yaxis.set_visible(False)
-            axes[i, i].set_visible(False)
-            # axes[i, i].annotate("Mean Certainty:\n" + str(np.round(np.mean(
-            #     self.D_bins[col] - 0.5), 3)), (0.5, 0.5),
-            #     xycoords='axes fraction', ha='center', va='center')
-            axes[i, i].grid(False)
+        # Remove subplot in bottom right triangle.
+        for x, y in bot_right_co:
+            axes[x, y].set_visible(False)
 
-        # Remove diagram in bottom right.
-        axes[n_cols, n_cols].set_visible(False)
+        # Remove subplot in top left.
+        axes[0, 0].set_visible(False)
 
         if title:
             fig.suptitle(title, size="26")
