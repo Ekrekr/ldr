@@ -59,7 +59,7 @@ Some examples of uses of model interpretation in real world applications include
 \item Scale the original data so it falls into [0, 1] intervals.
 \item Train a predictive model on the scaled data.
 \item Train a OCSVM (One Class Support Vector Machine) \cite{scholkopf2001estimating}, or an alternative model for detecting outliers, on the scaled data.
-\item Create a KDE (kernel density estimate) \cite{parzen1962estimation} of the training points with a bandwidth equal to some resoltuion $r$ (number of points in the latent dimensional subspace). Optional: to improve the visualization, normalize the training to produce a constant density output.
+\item Create a KDE (kernel density estimate) \cite{parzen1962estimation} of the training samples with a bandwidth equal to some resoltuion $r$ (number of samples in the latent dimensional subspace). Optional: to improve the visualization, normalize the training to produce a constant density output.
 \item Sample $n$ new points from the kernel density, using both classifiers to make predictions of each point. Weight the prediction according to the outlier classifier, where outliers have no model certainty in the prediction at that point.
 \item Bin the samples according to regular intervals. For each dimension, group points with resolution $r$, reducing the value of the bin to the mean prediction across it.
 \end{enumerate}
@@ -165,7 +165,7 @@ $$\Omega =
 \end{bmatrix}
 $$
 
-where $d_{i, j} \in [0,1]$, $l$ is the number of features and $m$ is the number of points (samples) in the feature space.
+where $d_{i, j} \in [0,1]$, $l$ is the number of features and $m$ is the number of samples in the feature space.
 
 The subset $X$ of values for features $t \subset w$ which are being used to predict a set $Y$ of features $l - t = \{i, (i \in w) \land (i \notin t)\}$ are therefore defined as
 
@@ -191,13 +191,13 @@ $$
 
 Let $p$ describe a model prediction mapping, such that $p(x_i) \approx y_i$. Let $o$ describe an outlier prediction mapping such that $o(x_i) = [1, 0]$, where $0$ indicates complete certainty of $x_i$ being an outlier and $1$ complete certainty of $x_i$ not being an outlier. Let outlier weighting and model prediction interpolation function $f$ be defined as
 
-$$f(x_i) = (p(x_i) - 0.5) \times o(x_i) + 0.5$$
+$$f(x_i) = (p(x_i) - 0.5) \times o(x_i) + 0.5.$$
 
 \subsection{KDE Sample Drawing}
 
-The KDE with bandwidth $1/r$ can be estimated and $n$ samples drawn from it in unison by drawing from the individual weighting each point $x \in X$ contributes to the kernel density. This is done by randomly selecting $n$ points from $X$ and drawing distributed points $q \sim N(x, 1/r)$. This sampling is equivalent to the VEGAS algorithm for the subsequent monte carlo integration \cite{lepage1978new}. The set of samples $Q$ can therefore be described as
+The KDE with bandwidth $1/r$ can be estimated and $n$ samples drawn from it in unison by drawing from the individual weighting each sample $x \in X$ contributes to the kernel density. This is done by randomly selecting $n$ samples from $X$ and drawing distributed points $q \sim N(x, 1/r)$. This sampling is equivalent to the VEGAS algorithm for the subsequent monte carlo integration \cite{lepage1978new}. The set of samples $Q$ can therefore be described as
 
-$$Q = \{q_1, q_2, \ldots, q_n\}$$
+$$Q = \{q_1, q_2, \ldots, q_n\}.$$
 
 Note that the VEGAS algorithm relies on the assumption that the sample space is univariate and i.i.d, resulting in LDR only successfully interpreting samples from the same feature space.
 
@@ -205,56 +205,21 @@ Note that the VEGAS algorithm relies on the assumption that the sample space is 
 
 Let $e$ be the set of intervals describing a single dimensional set of bins, such that
 
-$$e = \{[0, \frac{1}{r}], (\frac{1}{r}, \frac{2}{r}], \ldots, (\frac{r-1}{r}, 1]\}$$
+$$e = \{[0, \frac{1}{r}], (\frac{1}{r}, \frac{2}{r}], \ldots, (\frac{r-1}{r}, 1]\}.$$
 
-Let $b \subset t$ describe the features being interpreted. Let $E$ describe the $|b|$ multivariate permutations of bin pairs, such that
+Let $b \subset t$ describe the feature subspace being interpreted. Let $E$ describe the $|b|$ multivariate permutations of bin pairs, such that
 
-$$E = perm(e_1, e_2, \ldots, e_|b|)$$
+$$E = perm(e_1, e_2, \ldots, e_|b|).$$
 
+The Monte Carlo integration of a single point of the feature subset can therefore be described, where $Q_k$ represents all elements that fall within the bin $E_k$, as
 
-\section{Old Mathematical Explanation}
+$$I_{E_k} = \frac{1}{z} \sum^z_{i=1} f(q_i), q_i \in Q_k.$$
 
-Let $\Omega$ be the total sample space of input data. Let $X \in \Omega$ describe an input vector of data of length $n$, where each $x_i \in [0, 1]$ is the scaled value for feature $i$ in the vector.
-
-$$X = \{x_1, x_2, \ldots, x_n\}$$
-
-Let $Y$ be a single or multivariate output vector ($Y = y$ if single) where each $y_i$ is a predicted variable.
-
-$$Y = \{y_1, y_2, \ldots, y_n\}$$
-
-Let $s \in [0, 1]$ be a prediction of an outlier, s.t. 1 indicates an outlier and 0 not an outlier.
-
-Let $m$ describe a model as a function s.t. $m(X) = Y$, and $o$ describe an outlier classifier function s.t. $o(X) = s$
-
-$$m(X) = Y$$
-
-$$o(X) = s$$
-
-Let the outlier weighting and model prediction interpolation function $f$ be defined as
-
-$$f(X) = (m(X) - 0.5) \times o(X) + 0.5$$
-
-Let the resolution of a KDE bandwidth be $r$. The KDE function $g$ over a $n$ samples can therefore be defined as
-
-$$g(X) = \frac{1}{nr} \sum^n_{i=1} K \frac{(x - x_i)}{h}$$
-
-which is effectively an implementation of the VEGAS algorithm for the Monte Carlo Integration function $I_\Omega$.
-
-Let the set of points drawn from $\Omega$ be $Q$, where $q \in {i*r}^{1/r}_0$ while $x_i$ are drawn from $g$. $Q$ can therefore be described as
-
-$$Q = {x_1, x_2, \ldots, q, \ldots, x_n}$$
-
-One option for model certainty and outlier interpolation estimation is therefore given by
-
-$$I_\Omega = \{\frac{1}{n} \sum^n_{i=1} f(Q(X))\}$$
-
-While an alternative method is to use an SVM, or alternative predictive model, to model the function describing the dimensionality reduced space model certainty. Let this model be defined as $h$, resulting in
-
-$$I_\Omega = h(Q(X))$$
+The entire feature subset can be interpreted by applying this for all $E_K \in k$.
 
 \section{Conclusion}\label{Conclusion}
 
-I have demonstrated that it is possible to interpret lower dimension subsets of high dimensional feature spaces by estimating the prediction of black box models trained on the feature spaces. However, before acceptance for clinical purposes, the model should be rigorously tested on more data sets. In addition to this, further research of extending LDR could be to interpret latent features that do not relate to uninterpretable input features, such as neural networks trained on images; a visualization of the prediction of the model based on a single pixel would not be of much use by itself.
+I have demonstrated that it is possible to interpret a models understanding of high dimensional features spaces by estimating the certainty of the model over lower dimensional subsets of the feature space. However, before acceptance for clinical purposes, the model should be rigorously tested on more data sets. In addition to this, further research of extending LDR could be to interpret latent features that do not relate to uninterpretable input features, such as neural networks trained on images; a visualization of the prediction of the model based on a single pixel would not be of much use by itself.
 
 \printbibliography
 

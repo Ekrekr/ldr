@@ -1998,4 +1998,30 @@
     <bcf:citekey order="1">breiman2001statistical</bcf:citekey>
     <bcf:citekey order="2">schmidhuber2015deep</bcf:citekey>
     <bcf:citekey order="3">amershi2011effective</bcf:citekey>
-    <bcf:citekey order="4">scholkopf2001
+    <bcf:citekey order="4">scholkopf2001estimating</bcf:citekey>
+    <bcf:citekey order="5">parzen1962estimation</bcf:citekey>
+    <bcf:citekey order="6">breastcancer</bcf:citekey>
+    <bcf:citekey order="7">pedregosa2011scikit</bcf:citekey>
+    <bcf:citekey order="8">liaw2002classification</bcf:citekey>
+    <bcf:citekey order="9">paszke2017automatic</bcf:citekey>
+    <bcf:citekey order="10">song2013random</bcf:citekey>
+    <bcf:citekey order="11">bostonhouse</bcf:citekey>
+    <bcf:citekey order="12">lepage1978new</bcf:citekey>
+  </bcf:section>
+  <!-- SORTING TEMPLATES -->
+  <bcf:sortingtemplate name="none">
+    <bcf:sort order="1">
+      <bcf:sortitem order="1">citeorder</bcf:sortitem>
+    </bcf:sort>
+  </bcf:sortingtemplate>
+  <!-- DATALISTS -->
+  <bcf:datalist section="0"
+                name="none/global//global/global"
+                type="entry"
+                sortingtemplatename="none"
+                sortingnamekeytemplatename="global"
+                labelprefix=""
+                uniquenametemplatename="global"
+                labelalphanametemplatename="global">
+  </bcf:datalist>
+</bcf:controlfile>
