@@ -115,55 +115,6 @@
       \field{title}{Effective end-user interaction with machine learning}
       \field{year}{2011}
     \endentry
-    \entry{scholkopf2001estimating}{article}{}
-      \name{author}{5}{}{%
-        {{hash=ca31cc11ec9370460148c3a9c48fce45}{%
-           family={Sch{ö}lkopf},
-           familyi={S\bibinitperiod},
-           given={Bernhard},
-           giveni={B\bibinitperiod}}}%
-        {{hash=b18cccf0f11300769fc4b01f5fe5f13a}{%
-           family={Platt},
-           familyi={P\bibinitperiod},
-           given={John\bibnamedelima C},
-           giveni={J\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
-        {{hash=8feae4ec394a5f6905c74b1a7abff875}{%
-           family={Shawe-Taylor},
-           familyi={S\bibinithyphendelim T\bibinitperiod},
-           given={John},
-           giveni={J\bibinitperiod}}}%
-        {{hash=fb79b74540aea302c5a1a212a88331b1}{%
-           family={Smola},
-           familyi={S\bibinitperiod},
-           given={Alex\bibnamedelima J},
-           giveni={A\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
-        {{hash=2e35ef7841aac7d181dcf0a232a11d6d}{%
-           family={Williamson},
-           familyi={W\bibinitperiod},
-           given={Robert\bibnamedelima C},
-           giveni={R\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
-      }
-      \list{publisher}{1}{%
-        {MIT Press}%
-      }
-      \strng{namehash}{a70215356a8de56cfef0850e9b43f897}
-      \strng{fullhash}{d88cb9790e41549f506ce96babc096bd}
-      \strng{bibnamehash}{a70215356a8de56cfef0850e9b43f897}
-      \strng{authorbibnamehash}{a70215356a8de56cfef0850e9b43f897}
-      \strng{authornamehash}{a70215356a8de56cfef0850e9b43f897}
-      \strng{authorfullhash}{d88cb9790e41549f506ce96babc096bd}
-      \field{sortinit}{4}
-      \field{sortinithash}{11cdaee3b18e01d77f3f428b13c1fc76}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{Neural computation}
-      \field{number}{7}
-      \field{title}{Estimating the support of a high-dimensional distribution}
-      \field{volume}{13}
-      \field{year}{2001}
-      \field{pages}{1443\bibrangedash 1471}
-      \range{pages}{29}
-    \endentry
     \entry{parzen1962estimation}{article}{}
       \name{author}{1}{}{%
         {{hash=3538e72c10a2ef29e8444e94614376a0}{%
@@ -181,8 +132,8 @@
       \strng{authorbibnamehash}{3538e72c10a2ef29e8444e94614376a0}
       \strng{authornamehash}{3538e72c10a2ef29e8444e94614376a0}
       \strng{authorfullhash}{3538e72c10a2ef29e8444e94614376a0}
-      \field{sortinit}{5}
-      \field{sortinithash}{3c19c3776b658b3558e9e2e4840c01e2}
+      \field{sortinit}{4}
+      \field{sortinithash}{11cdaee3b18e01d77f3f428b13c1fc76}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{The annals of mathematical statistics}
@@ -209,8 +160,8 @@
       \strng{authorbibnamehash}{5afe8e3f6b6eecf97a9ab1ae06af5d67}
       \strng{authornamehash}{5afe8e3f6b6eecf97a9ab1ae06af5d67}
       \strng{authorfullhash}{5afe8e3f6b6eecf97a9ab1ae06af5d67}
-      \field{sortinit}{6}
-      \field{sortinithash}{57e57fb8451e7fcfa45d1e069f6d3136}
+      \field{sortinit}{5}
+      \field{sortinithash}{3c19c3776b658b3558e9e2e4840c01e2}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{month}{11}
@@ -281,8 +232,8 @@
       \strng{authorbibnamehash}{9ec95d747bac3417f92265a9a44f8bb4}
       \strng{authornamehash}{9ec95d747bac3417f92265a9a44f8bb4}
       \strng{authorfullhash}{9c0daf119a88f60278a791d01ffdd5ec}
-      \field{sortinit}{7}
-      \field{sortinithash}{c818dd9105a2852444fc9f5e145c294e}
+      \field{sortinit}{6}
+      \field{sortinithash}{57e57fb8451e7fcfa45d1e069f6d3136}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Journal of machine learning research}
@@ -314,8 +265,8 @@
       \strng{authorbibnamehash}{69d4002715459243425662f95d764001}
       \strng{authornamehash}{69d4002715459243425662f95d764001}
       \strng{authorfullhash}{69d4002715459243425662f95d764001}
-      \field{sortinit}{8}
-      \field{sortinithash}{07edf88d4ea82509b9c4b4d13f41c452}
+      \field{sortinit}{7}
+      \field{sortinithash}{c818dd9105a2852444fc9f5e145c294e}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{R news}
@@ -325,6 +276,43 @@
       \field{year}{2002}
       \field{pages}{18\bibrangedash 22}
       \range{pages}{5}
+    \endentry
+    \entry{liu2008isolation}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=231b376c1eeea575643f44deb86338c4}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Fei\bibnamedelima Tony},
+           giveni={F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=9bc17f24d02724c02d418a27dfea50bb}{%
+           family={Ting},
+           familyi={T\bibinitperiod},
+           given={Kai\bibnamedelima Ming},
+           giveni={K\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=6b1a37e820a730061851a81dcca2d154}{%
+           family={Zhou},
+           familyi={Z\bibinitperiod},
+           given={Zhi-Hua},
+           giveni={Z\bibinithyphendelim H\bibinitperiod}}}%
+      }
+      \list{organization}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{fullhash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{bibnamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{authorbibnamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{authornamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{authorfullhash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \field{sortinit}{8}
+      \field{sortinithash}{07edf88d4ea82509b9c4b4d13f41c452}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2008 Eighth IEEE International Conference on Data Mining}
+      \field{title}{Isolation forest}
+      \field{year}{2008}
+      \field{pages}{413\bibrangedash 422}
+      \range{pages}{10}
     \endentry
     \entry{paszke2017automatic}{inproceedings}{}
       \name{author}{10}{}{%

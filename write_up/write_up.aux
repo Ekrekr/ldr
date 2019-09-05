@@ -23,14 +23,16 @@
 \abx@aux@segm{0}{0}{schmidhuber2015deep}
 \abx@aux@cite{amershi2011effective}
 \abx@aux@segm{0}{0}{amershi2011effective}
-\abx@aux@cite{scholkopf2001estimating}
-\abx@aux@segm{0}{0}{scholkopf2001estimating}
 \abx@aux@cite{parzen1962estimation}
 \abx@aux@segm{0}{0}{parzen1962estimation}
 \abx@aux@cite{breastcancer}
 \abx@aux@segm{0}{0}{breastcancer}
 \abx@aux@cite{pedregosa2011scikit}
 \abx@aux@segm{0}{0}{pedregosa2011scikit}
+\abx@aux@cite{liaw2002classification}
+\abx@aux@segm{0}{0}{liaw2002classification}
+\abx@aux@cite{liu2008isolation}
+\abx@aux@segm{0}{0}{liu2008isolation}
 \@writefile{toc}{\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax }
 \@writefile{lof}{\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax }
 \@writefile{lot}{\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax }
@@ -40,8 +42,6 @@
 \newlabel{Introduction}{{2}{1}{Introduction}{section.2}{}}
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {section}{\numberline {3}The Algorithm}{1}{section.3}\protected@file@percent }
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {section}{\numberline {4}Classification Example}{1}{section.4}\protected@file@percent }
-\abx@aux@cite{liaw2002classification}
-\abx@aux@segm{0}{0}{liaw2002classification}
 \abx@aux@cite{paszke2017automatic}
 \abx@aux@segm{0}{0}{paszke2017automatic}
 \abx@aux@cite{song2013random}
@@ -49,44 +49,44 @@
 \@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces RF prediction certainty, where red indicates certaincy of malignancy, blue certainty of benality, and yellow a general lack of certainty. A lack of drawn contour indicates no samples were drawn from the sample space, as the kernel density was too low in those areas. The black dots are the locations of the samples. The top and left axis are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars. The axis are labelled with the relative input minumum and maximum values used for scaling.\relax }}{2}{figure.caption.2}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{fig:interp-rf}{{1}{2}{RF prediction certainty, where red indicates certaincy of malignancy, blue certainty of benality, and yellow a general lack of certainty. A lack of drawn contour indicates no samples were drawn from the sample space, as the kernel density was too low in those areas. The black dots are the locations of the samples. The top and left axis are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars. The axis are labelled with the relative input minumum and maximum values used for scaling.\relax }{figure.caption.2}{}}
-\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Random Forest and OCSVM Interpolation}{2}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Neural Network and OCSVM Interpolation}{2}{subsection.4.2}\protected@file@percent }
-\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces OCSVM prediction certainty, where red indicates certianty of outlier, blue certainty of not outlier, and yellow uncertainty.\relax }}{2}{figure.caption.3}\protected@file@percent }
-\newlabel{fig:interp-ocsvm}{{2}{2}{OCSVM prediction certainty, where red indicates certianty of outlier, blue certainty of not outlier, and yellow uncertainty.\relax }{figure.caption.3}{}}
-\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces RF with OCSVM interpolation prediction certainty, where red indicates overall certainty of malignancy, blue indicates overall certainty of benality, and yellow general overall uncertainty.\relax }}{2}{figure.caption.4}\protected@file@percent }
-\newlabel{fig:interp-rf-ocsvm}{{3}{2}{RF with OCSVM interpolation prediction certainty, where red indicates overall certainty of malignancy, blue indicates overall certainty of benality, and yellow general overall uncertainty.\relax }{figure.caption.4}{}}
-\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces NN with OCSVM interpolation prediction certanty.\relax }}{2}{figure.caption.5}\protected@file@percent }
-\newlabel{fig:interp-nn-ocsvm}{{4}{2}{NN with OCSVM interpolation prediction certanty.\relax }{figure.caption.5}{}}
+\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces IF prediction certainty, where red indicates certianty of outlier, blue certainty of not outlier, and yellow uncertainty.\relax }}{2}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:interp-if}{{2}{2}{IF prediction certainty, where red indicates certianty of outlier, blue certainty of not outlier, and yellow uncertainty.\relax }{figure.caption.3}{}}
+\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Random Forest and Isolation Forest Interpolation}{2}{subsection.4.1}\protected@file@percent }
+\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces RF with IF interpolation prediction certainty, where red indicates overall certainty of malignancy, blue indicates overall certainty of benality, and yellow general overall uncertainty.\relax }}{2}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:interp-rf-if}{{3}{2}{RF with IF interpolation prediction certainty, where red indicates overall certainty of malignancy, blue indicates overall certainty of benality, and yellow general overall uncertainty.\relax }{figure.caption.4}{}}
+\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces NN with IF interpolation prediction certanty.\relax }}{2}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:interp-nn-if}{{4}{2}{NN with IF interpolation prediction certanty.\relax }{figure.caption.5}{}}
+\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Neural Network and IF Interpolation}{2}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Analysis of Discrepancy Between RF and NN}{2}{subsection.4.3}\protected@file@percent }
 \abx@aux@cite{bostonhouse}
 \abx@aux@segm{0}{0}{bostonhouse}
 \@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces RF prediction certainty scatter plot of mean symmetry.\relax }}{3}{figure.caption.6}\protected@file@percent }
-\newlabel{fig:rf-ocsvm-mean-symmetry-scatter}{{5}{3}{RF prediction certainty scatter plot of mean symmetry.\relax }{figure.caption.6}{}}
+\newlabel{fig:rf-if-mean-symmetry-scatter}{{5}{3}{RF prediction certainty scatter plot of mean symmetry.\relax }{figure.caption.6}{}}
 \@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces NN prediction certainty scatter plot of mean symmetry.\relax }}{3}{figure.caption.7}\protected@file@percent }
-\newlabel{fig:nn-ocsvm-mean-symmetry-scatter}{{6}{3}{NN prediction certainty scatter plot of mean symmetry.\relax }{figure.caption.7}{}}
-\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Analysis of Discrepancy Between RF and NN}{3}{subsection.4.3}\protected@file@percent }
+\newlabel{fig:nn-if-mean-symmetry-scatter}{{6}{3}{NN prediction certainty scatter plot of mean symmetry.\relax }{figure.caption.7}{}}
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {section}{\numberline {5}Regression Example}{3}{section.5}\protected@file@percent }
-\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Regression RF with OCSVM interpolation. AGE is the age of the house, RM the number of rooms, and CRIM the per capita crime rate per town.\relax }}{3}{figure.caption.8}\protected@file@percent }
-\newlabel{fig:reg-rf-ocsvm-matrix}{{7}{3}{Regression RF with OCSVM interpolation. AGE is the age of the house, RM the number of rooms, and CRIM the per capita crime rate per town.\relax }{figure.caption.8}{}}
-\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces RF prediction certainty of number of rooms.\relax }}{3}{figure.caption.9}\protected@file@percent }
-\newlabel{fig:reg-rf-ocsvm-rm}{{8}{3}{RF prediction certainty of number of rooms.\relax }{figure.caption.9}{}}
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {section}{\numberline {6}Mathematical Explanation}{3}{section.6}\protected@file@percent }
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Feature Space and Subsets Definition}{3}{subsection.6.1}\protected@file@percent }
+\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Regression RF with IF interpolation. AGE is the age of the house, RM the number of rooms, and CRIM the per capita crime rate per town.\relax }}{3}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:reg-rf-if-matrix}{{7}{3}{Regression RF with IF interpolation. AGE is the age of the house, RM the number of rooms, and CRIM the per capita crime rate per town.\relax }{figure.caption.8}{}}
+\@writefile{lof}{\defcounter {refsection}{0}\relax }\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces RF prediction certainty of number of rooms.\relax }}{3}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:reg-rf-if-rm}{{8}{3}{RF prediction certainty of number of rooms.\relax }{figure.caption.9}{}}
+\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Model and Outlier Prediction Interpolation}{3}{subsection.6.2}\protected@file@percent }
 \abx@aux@cite{lepage1978new}
 \abx@aux@segm{0}{0}{lepage1978new}
 \abx@aux@refcontextdefaultsdone
 \abx@aux@defaultrefcontext{0}{breiman2001statistical}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{schmidhuber2015deep}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{amershi2011effective}{none/global//global/global}
-\abx@aux@defaultrefcontext{0}{scholkopf2001estimating}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{parzen1962estimation}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{breastcancer}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{pedregosa2011scikit}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{liaw2002classification}{none/global//global/global}
+\abx@aux@defaultrefcontext{0}{liu2008isolation}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{paszke2017automatic}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{song2013random}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{bostonhouse}{none/global//global/global}
 \abx@aux@defaultrefcontext{0}{lepage1978new}{none/global//global/global}
-\@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Model and Outlier Prediction Interpolation}{4}{subsection.6.2}\protected@file@percent }
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}KDE Sample Drawing}{4}{subsection.6.3}\protected@file@percent }
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Monte Carlo Integration Over Feature Subsets}{4}{subsection.6.4}\protected@file@percent }
 \@writefile{toc}{\defcounter {refsection}{0}\relax }\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{4}{section.7}\protected@file@percent }

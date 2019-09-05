@@ -120,7 +120,7 @@ class LDR:
             self.targets = self.scaled["target"]
             self.scaled = self.scaled.drop(["target"], axis=1)
 
-    def density_estimate(self, f, n=50000, k_dens=0.02, n_bins=51):
+    def density_estimate(self, f, n=50000, k_dens=0.06, n_bins=51):
         # n_bins <= 1/k_dens as that the bucket resolution should not exceed
         # that of the kernel density.
         self.n_bins = n_bins
@@ -169,9 +169,13 @@ class LDR:
         plt.grid(False)
         plt.show()
 
-    def density_scatter(self, col, figsize=(8, 4)):
+    def density_scatter(self, col, figsize=(8, 4), save=None, title=None):
         self.D.plot.scatter(x="prediction", y=col, figsize=figsize)
-        plt.title(col + " value and certainty")
+        if title:
+            plt.title(title)
+        if save:
+            plt.savefig(save)
+        plt.show()
 
     def density_contour(self, col):
         self.D.plot.scatter(x="prediction", y=col)
@@ -197,7 +201,7 @@ class LDR:
             ret += ("\n" + txt[36:54])
         return ret
 
-    def vis_1d_separate(self, title=None):
+    def vis_1d_separate(self, title=None, save=None):
         rows = self.D_bins.columns
         n_rows = len(rows)
         colors = plt.get_cmap("Spectral")
@@ -226,9 +230,12 @@ class LDR:
         if title:
             fig.suptitle(title, size="26")
         fig.tight_layout(rect=[0, 0, 1, 0.96])
+
+        if save:
+            plt.savefig(save)
         plt.show()
 
-    def vis_2d(self, title=None):
+    def vis_2d(self, title=None, save=None, dots=True):
         """
         """
         np.random.seed(42)
@@ -237,14 +244,6 @@ class LDR:
         n_cols = len(cols)
         fig, axes = plt.subplots(nrows=n_cols, ncols=n_cols,
                                  figsize=(n_cols * 5.0, n_cols * 4.5))
-
-        # Hide all ticks and labels.
-        for ax in axes.flat:
-            pass
-            # ax.xaxis.set_visible(False)
-            # ax.yaxis.set_visible(False)
-            # ax.set_xlim(0.0, 1.0)
-            # ax.set_ylim(0.0, 1.0)
 
         # Calculate the general [0, 1] meshgrid for contours.
         res_sub = np.linspace(0.0, 1.0, self.n_bins - 1)
@@ -301,9 +300,10 @@ class LDR:
                   range(self.n_bins - 1)]
             axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
                 -0.5, 0.5, 41), cmap="Spectral")
-            axes[x, y].scatter(self.df[x_col],
-                               self.df[y_col], c="#000000",
-                               s=3, marker="o", alpha=0.75, zorder=1)
+            if dots:
+                axes[x, y].scatter(self.df[x_col],
+                                   self.df[y_col], c="#000000",
+                                   s=3, marker="o", alpha=0.2, zorder=1)
             axes[x, y].set_xlim(min_x_val, max_x_val)
             axes[x, y].set_ylim(min_y_val, max_y_val)
             axes[x, y].set_xticks(np.linspace(min_x_val, max_x_val, 3))
@@ -374,4 +374,8 @@ class LDR:
         if title:
             fig.suptitle(title, size="26")
         fig.tight_layout(rect=[0, 0, 1, 0.96])
+
+        if save:
+            plt.savefig(save)
+
         plt.show()
