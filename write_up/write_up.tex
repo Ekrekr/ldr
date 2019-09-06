@@ -58,11 +58,54 @@ Some examples of uses of model interpretation in real world applications include
 \begin{enumerate}
 \item Scale the original data so it falls into [0, 1] intervals.
 \item Train a predictive model on the scaled data.
-\item Train an outlier detection predictive model on the scaled data.
-\item Create a KDE (kernel density estimate) \cite{parzen1962estimation} of the training samples with a bandwidth $h$ (a good value for this is $\frac{3}{r}$, as this spreads the points out more). Optional: to improve the visualization, normalize the training to produce a constant density output.
-\item Sample $n$ new points from the kernel density, using both classifiers to make predictions of each point. Weight the prediction according to the outlier classifier, where outliers have no model certainty in the prediction at that point.
+\item (Optional) Train an outlier detection predictive model on the scaled data.
+\item Create a KDE (kernel density estimate) \cite{parzen1962estimation} of the training samples with a bandwidth $h$ (In most cases this is best set equal to $\frac{1}{r}$). (Optional) to improve the visualization, normalize the training to produce a constant density output.
+\item Sample $n$ new points from the kernel density, using the predictive model to make a prediction at each point. (Optional) Weight the prediction according to the outlier classifier, where outliers have no model certainty in the prediction at that point.
 \item Bin the samples according to regular intervals. For each dimension, group points with resolution $r$, reducing the value of the bin to the mean prediction across it.
 \end{enumerate}
+
+The phrase \textit{(Optional)} here is used as this method is for estimating reduced dimensionality across any space; however for real world deployment it is sensible to use outlier detection, so the description is included.
+
+\section{Generated Data Classification Example}
+
+5000 samples are generated for two features from a 2 dimensional normal distribution with a mean of 0.5 and standard distribution of $\frac{1}{6}$, with any values outside the unit interval being scaled to the closest value in the interval. The KDE of each feature can be seen in figure \ref{fig:gen-kde}. Classes are assigned with the division set to be either side of where the values to the left of the peak of \textit{Normal 1}. The data is then split across a 0.7/0.3 training/testing split. A single DT (decision tree) achieved and accuracy of 100\%. 
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\columnwidth]{img/gen_kde.png}
+\caption{KDE (bandwidth $\frac{1}{r = 50}$) of generated normal distributions, $\mu = 0.5$, $\sigma = \frac{1}{6}$.}
+\label{fig:gen-kde}
+\end{figure}
+
+Applying LDR to the data with a resolution of 50 to the raw decision tree prediction results in the model interpretation shown in figure \ref{fig:gen-rf}. An IF (Isolation Forest) \cite{liu2008isolation} with a dynamically learned frontier was trained for outlier detection, which resulted in the outlier interpretation shown in figure \ref{fig:gen-if}. Interpolationg the DT and IF, as defined in \ref{interpolation}, resulted in in the interpretation shown in figure \ref{fig:gen-rf-if}. This shows how the \textit{Normal 1} feature by itself can be a strong indicator of model prediction, while the \textit{Normal 2} feature has little effect on the prediction by itself. Inspecting the predictions across the entire feature space gives the scatter plot shown in figure \ref{fig:gen-scat}, showing that LDR is not really necessary for interpreting the model in this scenario; the next examples demonstrate how LDR fares on difficult to interpret models.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\columnwidth]{img/gen_rf.png}
+\caption{RF model prediction of generated data KDE samples. Red is certainty of class 1, blue certainty of class 2, yellow uncertainty, and grey a lack of samples in the KDE space. The top and left bar graphs are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars. The axis are labelled with the relative input minumum and maximum values used for scaling.}
+\label{fig:gen-rf}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\columnwidth]{img/gen_if.png}
+\caption{IF model prediction of generated data KDE samples. Red is certainty of outliers, and blue certainty of not outliers.}
+\label{fig:gen-if}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\columnwidth]{img/gen_rf_if.png}
+\caption{RF and IF model interpolation prediction of generated data KDE samples.}
+\label{fig:gen-rf-if}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\columnwidth]{img/gen_scat.png}
+\caption{Scatter plot of model predictions on raw generated data.}
+\label{fig:gen-scat}
+\end{figure}
 
 \section{Classification Example}
 
@@ -70,12 +113,12 @@ The Wisonsin breast cancer dataset \cite{breastcancer} (provided by scikit \cite
 
 \subsection{Random Forest and Isolation Forest Interpolation}
 
-The 100 estimator RF (Random Forest) \cite{liaw2002classification} achieved an F1 score of 0.975, while an IF (Isolation Forest) \cite{liu2008isolation} with a dynamically selected frontier was trained for outlier detection. Benign was selected as the positive category, resulting in a value of 1.0 indicating benign tumors and 0.0 inidicating malignant. All of the data is min-max scaled, then a 0.7/0.3 training/testing data split is applied. LDR is applied to the training data, integrating over 50,000 randomly selected points from the weighted kernel density of the sample space with a resolution of 16.66. Mean symmetry and mean area are selected for visual inspection of their individual effect on the model's classification. The certainty of the RF is shown in figure \ref{fig:interp-rf}, while the certianty of the IF is shown in figure \ref{fig:interp-if}. The final combined certainty is shown in figure \ref{fig:interp-rf-if}.
+A 100 estimator RF (Random Forest) \cite{liaw2002classification} achieved an F1 score of 0.975, while an IF with a dynamically learned frontier was trained for outlier detection. Benign was selected as the positive category, resulting in a value of 1.0 indicating benign tumors and 0.0 inidicating malignant. All of the data is min-max scaled, then a 0.7/0.3 training/testing data split is applied. LDR is applied to the training data, integrating over 50,000 randomly selected points from the weighted kernel density of the sample space with a resolution of 50. Mean symmetry and mean area are selected for visual inspection of their individual effect on the model's classification. The certainty of the RF is shown in figure \ref{fig:interp-rf}, while the certianty of the IF is shown in figure \ref{fig:interp-if}. The final combined certainty is shown in figure \ref{fig:interp-rf-if}.
 
 \begin{figure}
 \centering
 \includegraphics[width=0.8\columnwidth]{img/interp_rf.png}
-\caption{RF prediction certainty, where red indicates certaincy of malignancy, blue certainty of benality, and yellow a general lack of certainty. A lack of drawn contour indicates no samples were drawn from the sample space, as the kernel density was too low in those areas. The black dots are the locations of the samples. The top and left axis are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars. The axis are labelled with the relative input minumum and maximum values used for scaling.}
+\caption{RF prediction certainty, where red indicates certaincy of malignancy, and blue certainty of benality.}
 \label{fig:interp-rf}
 \end{figure}
 
@@ -138,7 +181,6 @@ A similar method as with the classification was applied to the Boston House Pric
 \item Any quantity of crime only has a negative effect on house price.
 \item The lower the crime rate, the more rooms a house tends to have, and the more it is worth.
 \item The older the house, the less it tends to be worth.
-\item The age of the house and the number of rooms are for the most part independent.
 \end{enumerate}
 
 The prediction certainty prior to be binning can be seen in figure \ref{fig:reg-rf-if-rm}.
@@ -187,7 +229,7 @@ $$Y =
 \end{bmatrix}
 $$
 
-\subsection{Model and Outlier Prediction Interpolation}
+\subsection{(Optional) Model and Outlier Prediction Interpolation }\label{interpolation}
 
 Let $p$ describe a model prediction mapping, such that $p(x_i) \approx y_i$. Let $o$ describe an outlier prediction mapping such that $o(x_i) = [1, 0]$, where $0$ indicates complete certainty of $x_i$ being an outlier and $1$ complete certainty of $x_i$ not being an outlier. Let outlier weighting and model prediction interpolation function $f$ be defined as
 

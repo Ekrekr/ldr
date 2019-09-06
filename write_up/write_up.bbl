@@ -144,6 +144,43 @@
       \field{pages}{1065\bibrangedash 1076}
       \range{pages}{12}
     \endentry
+    \entry{liu2008isolation}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=231b376c1eeea575643f44deb86338c4}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Fei\bibnamedelima Tony},
+           giveni={F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=9bc17f24d02724c02d418a27dfea50bb}{%
+           family={Ting},
+           familyi={T\bibinitperiod},
+           given={Kai\bibnamedelima Ming},
+           giveni={K\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=6b1a37e820a730061851a81dcca2d154}{%
+           family={Zhou},
+           familyi={Z\bibinitperiod},
+           given={Zhi-Hua},
+           giveni={Z\bibinithyphendelim H\bibinitperiod}}}%
+      }
+      \list{organization}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{fullhash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{bibnamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{authorbibnamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{authornamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \strng{authorfullhash}{b38d2601a5a1a63e9c41ca76b68a2df4}
+      \field{sortinit}{5}
+      \field{sortinithash}{3c19c3776b658b3558e9e2e4840c01e2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2008 Eighth IEEE International Conference on Data Mining}
+      \field{title}{Isolation forest}
+      \field{year}{2008}
+      \field{pages}{413\bibrangedash 422}
+      \range{pages}{10}
+    \endentry
     \entry{breastcancer}{misc}{}
       \name{author}{1}{}{%
         {{hash=5afe8e3f6b6eecf97a9ab1ae06af5d67}{%
@@ -160,8 +197,8 @@
       \strng{authorbibnamehash}{5afe8e3f6b6eecf97a9ab1ae06af5d67}
       \strng{authornamehash}{5afe8e3f6b6eecf97a9ab1ae06af5d67}
       \strng{authorfullhash}{5afe8e3f6b6eecf97a9ab1ae06af5d67}
-      \field{sortinit}{5}
-      \field{sortinithash}{3c19c3776b658b3558e9e2e4840c01e2}
+      \field{sortinit}{6}
+      \field{sortinithash}{57e57fb8451e7fcfa45d1e069f6d3136}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{month}{11}
@@ -232,8 +269,8 @@
       \strng{authorbibnamehash}{9ec95d747bac3417f92265a9a44f8bb4}
       \strng{authornamehash}{9ec95d747bac3417f92265a9a44f8bb4}
       \strng{authorfullhash}{9c0daf119a88f60278a791d01ffdd5ec}
-      \field{sortinit}{6}
-      \field{sortinithash}{57e57fb8451e7fcfa45d1e069f6d3136}
+      \field{sortinit}{7}
+      \field{sortinithash}{c818dd9105a2852444fc9f5e145c294e}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Journal of machine learning research}
@@ -265,8 +302,8 @@
       \strng{authorbibnamehash}{69d4002715459243425662f95d764001}
       \strng{authornamehash}{69d4002715459243425662f95d764001}
       \strng{authorfullhash}{69d4002715459243425662f95d764001}
-      \field{sortinit}{7}
-      \field{sortinithash}{c818dd9105a2852444fc9f5e145c294e}
+      \field{sortinit}{8}
+      \field{sortinithash}{07edf88d4ea82509b9c4b4d13f41c452}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{R news}
@@ -276,43 +313,6 @@
       \field{year}{2002}
       \field{pages}{18\bibrangedash 22}
       \range{pages}{5}
-    \endentry
-    \entry{liu2008isolation}{inproceedings}{}
-      \name{author}{3}{}{%
-        {{hash=231b376c1eeea575643f44deb86338c4}{%
-           family={Liu},
-           familyi={L\bibinitperiod},
-           given={Fei\bibnamedelima Tony},
-           giveni={F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
-        {{hash=9bc17f24d02724c02d418a27dfea50bb}{%
-           family={Ting},
-           familyi={T\bibinitperiod},
-           given={Kai\bibnamedelima Ming},
-           giveni={K\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
-        {{hash=6b1a37e820a730061851a81dcca2d154}{%
-           family={Zhou},
-           familyi={Z\bibinitperiod},
-           given={Zhi-Hua},
-           giveni={Z\bibinithyphendelim H\bibinitperiod}}}%
-      }
-      \list{organization}{1}{%
-        {IEEE}%
-      }
-      \strng{namehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
-      \strng{fullhash}{b38d2601a5a1a63e9c41ca76b68a2df4}
-      \strng{bibnamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
-      \strng{authorbibnamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
-      \strng{authornamehash}{b38d2601a5a1a63e9c41ca76b68a2df4}
-      \strng{authorfullhash}{b38d2601a5a1a63e9c41ca76b68a2df4}
-      \field{sortinit}{8}
-      \field{sortinithash}{07edf88d4ea82509b9c4b4d13f41c452}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{2008 Eighth IEEE International Conference on Data Mining}
-      \field{title}{Isolation forest}
-      \field{year}{2008}
-      \field{pages}{413\bibrangedash 422}
-      \range{pages}{10}
     \endentry
     \entry{paszke2017automatic}{inproceedings}{}
       \name{author}{10}{}{%

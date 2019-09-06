@@ -120,9 +120,9 @@ class LDR:
             self.targets = self.scaled["target"]
             self.scaled = self.scaled.drop(["target"], axis=1)
 
-    def density_estimate(self, f, n=50000, k_dens=0.06, n_bins=51):
-        # n_bins <= 1/k_dens as that the bucket resolution should not exceed
-        # that of the kernel density.
+    def density_estimate(self, f, n=50000, k_dens=0.02, n_bins=51):
+        # n_bins + 1 <= 1/k_dens as that the bucket resolution should not
+        # exceed that of the kernel density.
         self.n_bins = n_bins
 
         kernel = KernelDensity(k_dens).fit(self.scaled_w)

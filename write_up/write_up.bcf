@@ -1999,10 +1999,10 @@
     <bcf:citekey order="2">schmidhuber2015deep</bcf:citekey>
     <bcf:citekey order="3">amershi2011effective</bcf:citekey>
     <bcf:citekey order="4">parzen1962estimation</bcf:citekey>
-    <bcf:citekey order="5">breastcancer</bcf:citekey>
-    <bcf:citekey order="6">pedregosa2011scikit</bcf:citekey>
-    <bcf:citekey order="7">liaw2002classification</bcf:citekey>
-    <bcf:citekey order="8">liu2008isolation</bcf:citekey>
+    <bcf:citekey order="5">liu2008isolation</bcf:citekey>
+    <bcf:citekey order="6">breastcancer</bcf:citekey>
+    <bcf:citekey order="7">pedregosa2011scikit</bcf:citekey>
+    <bcf:citekey order="8">liaw2002classification</bcf:citekey>
     <bcf:citekey order="9">paszke2017automatic</bcf:citekey>
     <bcf:citekey order="10">song2013random</bcf:citekey>
     <bcf:citekey order="11">bostonhouse</bcf:citekey>
