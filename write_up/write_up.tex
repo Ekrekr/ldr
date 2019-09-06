@@ -55,6 +55,8 @@ Some examples of uses of model interpretation in real world applications include
 
 \section{The Algorithm}
 
+The phrase \textit{(Optional)} here is with regards to outlier detection, which is sensible for real world usage, but not necessary as this method can be used to estimate reduced dimensionality across any space.
+
 \begin{enumerate}
 \item Scale the original data so it falls into [0, 1] intervals.
 \item Train a predictive model on the scaled data.
@@ -64,11 +66,9 @@ Some examples of uses of model interpretation in real world applications include
 \item Bin the samples according to regular intervals. For each dimension, group points with resolution $r$, reducing the value of the bin to the mean prediction across it.
 \end{enumerate}
 
-The phrase \textit{(Optional)} here is used as this method is for estimating reduced dimensionality across any space; however for real world deployment it is sensible to use outlier detection, so the description is included.
-
 \section{Generated Data Classification Example}
 
-5000 samples are generated for two features from a 2 dimensional normal distribution with a mean of 0.5 and standard distribution of $\frac{1}{6}$, with any values outside the unit interval being scaled to the closest value in the interval. The KDE of each feature can be seen in figure \ref{fig:gen-kde}. Classes are assigned with the division set to be either side of where the values to the left of the peak of \textit{Normal 1}. The data is then split across a 0.7/0.3 training/testing split. A single DT (decision tree) achieved and accuracy of 100\%. 
+5000 samples are generated for two features from a 2 dimensional normal distribution with a mean of 0.5 and standard distribution of $\frac{1}{6}$, with any values outside the unit interval being scaled to the closest value in the interval. The KDE of each feature can be seen in figure \ref{fig:gen-kde}. Classes are assigned with the division set to be either side of where the values to the left of the peak of \textit{Normal 1}. The data is then split across a 0.7/0.3 training/testing split. A single DT (decision tree) achieved an unsurprising accuracy of 100\%. 
 
 \begin{figure}
 \centering
@@ -77,13 +77,13 @@ The phrase \textit{(Optional)} here is used as this method is for estimating red
 \label{fig:gen-kde}
 \end{figure}
 
-Applying LDR to the data with a resolution of 50 to the raw decision tree prediction results in the model interpretation shown in figure \ref{fig:gen-rf}. An IF (Isolation Forest) \cite{liu2008isolation} with a dynamically learned frontier was trained for outlier detection, which resulted in the outlier interpretation shown in figure \ref{fig:gen-if}. Interpolationg the DT and IF, as defined in \ref{interpolation}, resulted in in the interpretation shown in figure \ref{fig:gen-rf-if}. This shows how the \textit{Normal 1} feature by itself can be a strong indicator of model prediction, while the \textit{Normal 2} feature has little effect on the prediction by itself. Inspecting the predictions across the entire feature space gives the scatter plot shown in figure \ref{fig:gen-scat}, showing that LDR is not really necessary for interpreting the model in this scenario; the next examples demonstrate how LDR fares on difficult to interpret models.
+Applying LDR with a resolution of 50 to the raw decision tree prediction results in the model interpretation shown in figure \ref{fig:gen-dt}. An IF (Isolation Forest) \cite{liu2008isolation} with a dynamically learned frontier was trained for outlier detection, which resulted in the outlier interpretation shown in figure \ref{fig:gen-if}. Interpolationg the DT and IF, as defined in \ref{interpolation}, resulted in in the interpretation shown in figure \ref{fig:gen-dt-if}. This shows how the \textit{Normal 1} feature by itself can be a strong indicator of model prediction, while the \textit{Normal 2} feature has little effect on the prediction by itself. Inspecting the predictions across the entire feature space gives the scatter plot shown in figure \ref{fig:gen-scat}, showing that LDR is not really necessary for interpreting the model in this scenario; the next examples demonstrate how LDR fares on difficult to interpret models.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.8\columnwidth]{img/gen_rf.png}
-\caption{RF model prediction of generated data KDE samples. Red is certainty of class 1, blue certainty of class 2, yellow uncertainty, and grey a lack of samples in the KDE space. The top and left bar graphs are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars. The axis are labelled with the relative input minumum and maximum values used for scaling.}
-\label{fig:gen-rf}
+\includegraphics[width=0.8\columnwidth]{img/gen_dt.png}
+\caption{DT model prediction of generated data KDE samples. Red is certainty of class 1, blue certainty of class 2, yellow uncertainty, and grey a lack of samples in the KDE space. The top and left bar graphs are the single dimensional decomposition, while the bottom right is the two dimensional decomposition. In the single dimension estimates, the resulting value is shifted down by 0.5 to create a flat midpoint for the bars. The axis are labelled with the relative input minumum and maximum values used for scaling.}
+\label{fig:gen-dt}
 \end{figure}
 
 \begin{figure}
@@ -95,9 +95,9 @@ Applying LDR to the data with a resolution of 50 to the raw decision tree predic
 
 \begin{figure}
 \centering
-\includegraphics[width=0.8\columnwidth]{img/gen_rf_if.png}
-\caption{RF and IF model interpolation prediction of generated data KDE samples.}
-\label{fig:gen-rf-if}
+\includegraphics[width=0.8\columnwidth]{img/gen_dt_if.png}
+\caption{DT and IF model interpolation prediction of generated data KDE samples.}
+\label{fig:gen-dt-if}
 \end{figure}
 
 \begin{figure}
