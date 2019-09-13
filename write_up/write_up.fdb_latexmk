@@ -1,14 +1,14 @@
 # Fdb version 3
-["biber write_up"] 1568371123 "write_up.bcf" "write_up.bbl" "write_up" 1568371130
+["biber write_up"] 1568371123 "write_up.bcf" "write_up.bbl" "write_up" 1568371392
   "write_up.bcf" 1568371130 91194 763b331d260711f3f8e6753ff32ccad5 "pdflatex"
   "write_up.bib" 1567673492 3690 0a60a2f4008cdb21c8c9943d14182053 ""
   (generated)
   "write_up.bbl"
   "write_up.blg"
-["pdflatex"] 1568371128 "/Users/eraymond/Documents/github/ldr/write_up/write_up.tex" "/Users/eraymond/Documents/github/ldr/write_up/write_up.pdf" "write_up" 1568371130
+["pdflatex"] 1568371128 "/Users/eraymond/Documents/github/ldr/write_up/write_up.tex" "/Users/eraymond/Documents/github/ldr/write_up/write_up.pdf" "write_up" 1568371392
   "/Users/eraymond/Documents/github/ldr/write_up/write_up.aux" 1568371130 12360 4b035e58ed28d389419115ebe7e639ac ""
-  "/Users/eraymond/Documents/github/ldr/write_up/write_up.tex" 1568371119 17359 9c725d6eb44d0e163559c3ef99592ae1 ""
-  "/dev/null" 1568371130 0 d41d8cd98f00b204e9800998ecf8427e ""
+  "/Users/eraymond/Documents/github/ldr/write_up/write_up.tex" 1568371392 17359 9c725d6eb44d0e163559c3ef99592ae1 ""
+  "/dev/null" 1568371392 0 d41d8cd98f00b204e9800998ecf8427e ""
   "/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1254269338 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc" 1202520719 3486 c7eadf5dcc57b3b2d11736679f6636ba ""
   "/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc" 1202520719 2405 5dcf2c1b967ee25cc46c58cd52244aed ""
@@ -179,13 +179,13 @@
   "write_up.bbl" 1568371124 19040 f667e587a929ee74d1384d79b1a4a61f "biber write_up"
   "write_up.out" 1568371130 1051 b7c7d88163f9fae00274c5a7df4658d0 "pdflatex"
   "write_up.run.xml" 1568371130 2365 0ad3f568831cfe54121e73de12fe3e2c "pdflatex"
-  "write_up.tex" 1568371119 17359 9c725d6eb44d0e163559c3ef99592ae1 ""
+  "write_up.tex" 1568371392 17359 9c725d6eb44d0e163559c3ef99592ae1 ""
   (generated)
-  "write_up.aux"
-  "/Users/eraymond/Documents/github/ldr/write_up/write_up.log"
-  "write_up.run.xml"
-  "write_up.log"
   "write_up.out"
+  "write_up.run.xml"
+  "write_up.aux"
+  "write_up.log"
   "write_up.pdf"
   "/Users/eraymond/Documents/github/ldr/write_up/write_up.pdf"
+  "/Users/eraymond/Documents/github/ldr/write_up/write_up.log"
   "write_up.bcf"
