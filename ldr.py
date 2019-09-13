@@ -27,15 +27,20 @@ pd.options.mode.chained_assignment = None
 
 
 class LDR:
-    def __init__(self, df: pd.DataFrame, targets: pd.Series, problem_type,
-                 pos_val: any=None, neg_val: any=None, sample_pos: bool=True,
+    def __init__(self,
+                 df: pd.DataFrame,
+                 targets: pd.Series,
+                 problem_type,
+                 pos_val: any=None,
+                 neg_val: any=None,
+                 sample_pos: bool=True,
                  sample_neg: bool=True):
         """
         Latent Dimensionality Reduction.
 
         Note: Currently only supports binary classification.
 
-        args:
+        Args:
             df: The data (excluding targets).
             targets: The targets of the model.
             problem_type: 'class' for classification or 'reg' for regression.
@@ -120,7 +125,20 @@ class LDR:
             self.targets = self.scaled["target"]
             self.scaled = self.scaled.drop(["target"], axis=1)
 
-    def density_estimate(self, f, n=50000, k_dens=0.02, n_bins=51):
+    def density_estimate(self,
+                         f: any,
+                         n: int=50000,
+                         k_dens: float=0.02,
+                         n_bins: int=51):
+        """
+        Draws samples from the kernel density of the sample space.
+
+        Args:
+            f: The model predictor, described as a function.
+            n: The number of samples to draw.
+            k_dens: The bandwidth of the KDE.
+            n_bins: The resolution of the binning post sampling.
+        """
         # n_bins + 1 <= 1/k_dens as that the bucket resolution should not
         # exceed that of the kernel density.
         self.n_bins = n_bins
@@ -138,7 +156,16 @@ class LDR:
 
         self.select_bins(n_bins=n_bins)
 
-    def select_bins(self, cols: list=None, n_bins=51):
+    def select_bins(self,
+                    cols: typing.List[str]=None,
+                    n_bins=51):
+        """
+        Groups samples into bins.
+
+        Args:
+            cols: If None then all columns, otherwise use subset specified.
+            n_bins: The resolution of the bins (num of bins in unit interval).
+        """
         if not cols:
             cols = self.D.columns[:-1]
         self.n_bins = n_bins
@@ -160,7 +187,14 @@ class LDR:
 
     # def select_2d_bins(self):
 
-    def scatter_plot_matrix(self, cols: list=None):
+    def scatter_plot_matrix(self,
+                            cols: list=None):
+        """
+        Creates scatterplot matrix of features.
+
+        Args:
+            cols: If None then all columns, otherwise subset specified.
+        """
         if not cols:
             to_plot = self.scaled
         else:
@@ -169,19 +203,49 @@ class LDR:
         plt.grid(False)
         plt.show()
 
-    def density_scatter(self, col, figsize=(8, 4), save=None, title=None):
-        self.D.plot.scatter(x="prediction", y=col, figsize=figsize)
+    def density_scatter(self,
+                        col: str,
+                        figsize: typing.Tuple[int, int]=(8, 4),
+                        save=None,
+                        title=None):
+        """
+        Plots provided model applied to samples of certainty.
+
+        Args:
+            col: Column to plot.
+            figsize: Size of the figure (matplotlib).
+            save: Whether to save the file.
+            title: Title to give the figure, if not None.
+        """
+        self.D.plot.scatter(x="prediction", y=col, figsize=figsize,
+                            s=1)
         if title:
             plt.title(title)
         if save:
             plt.savefig(save)
         plt.show()
 
-    def density_contour(self, col):
+    def density_contour(self,
+                        col: str):
+        """
+        Plots the density contour of a column (feature).
+
+        Args:
+            col: The column to plot the contour of.
+        """
         self.D.plot.scatter(x="prediction", y=col)
         plt.title(col + " value and certainty")
 
-    def vis_1d(self, figsize=(16, 8), title=None):
+    def vis_1d(self,
+               figsize: typing.Tuple[float, float]=(16, 8),
+               title=None):
+        """
+        Visualizes effect of singular feature on the data.
+
+        Args:
+            figsize: Size of figure (matplotlib).
+            title: Title to give the figure, if not None.
+        """
         # Shifting everything down 0.5 makes 0 the uncertain value.
         D_mid_bins = copy.deepcopy(self.D_bins)
         for col in D_mid_bins[:-1]:
@@ -190,10 +254,28 @@ class LDR:
                             title=title, figsize=figsize)
         plt.show()
 
-    def _rescale(self, min_val, max_val, x):
+    def _rescale(self,
+                 min_val: float,
+                 max_val: float,
+                 x: float):
+        """
+        Rescales variables back from unit interval.
+
+        Args:
+            min_val: Value that 0 would be converted from.
+            max_val: Value that 1 would be converted from.
+            x: The value to convert.
+        """
         return (max_val - min_val) * x + min_val
 
-    def _break_text(self, txt):
+    def _break_text(self,
+                    txt: str):
+        """
+        Breaks text with new line every 18 chars. Max 3 lines.
+
+        Args:
+            txt: The text to break.
+        """
         ret = txt[:18]
         if len(txt) >= 18:
             ret += ("\n" + txt[18:36])
@@ -201,7 +283,16 @@ class LDR:
             ret += ("\n" + txt[36:54])
         return ret
 
-    def vis_1d_separate(self, title=None, save=None):
+    def vis_1d_separate(self,
+                        title: str=None,
+                        save: str=None):
+        """
+        Visualizes individual effect of all selected features on the data.
+
+        Args:
+            title: Title to give plot, if not None.
+            save: Path to save file, if not None.
+        """
         rows = self.D_bins.columns
         n_rows = len(rows)
         colors = plt.get_cmap("Spectral")
@@ -235,8 +326,17 @@ class LDR:
             plt.savefig(save)
         plt.show()
 
-    def vis_2d(self, title=None, save=None, dots=True):
+    def vis_2d(self,
+               title: str=None,
+               save: str=None,
+               dots: bool=True):
         """
+        Visualizes individual effects, 2D cross effects of selected features.
+
+        Args:
+            title: Title to give plot, if not None.
+            save: Path to save file, if not None.
+            dots: Whether to draw dots of VEGAS sampling.
         """
         np.random.seed(42)
         colors = plt.get_cmap("Spectral")

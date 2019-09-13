@@ -1,4 +1,4 @@
-\documentclass[a4paper, twocolumn]{article}
+\documentclass[a4paper, oneside, twocolumn]{article}
 \usepackage[margin=0.7in]{geometry}
 \usepackage{lmodern}
 \usepackage{caption,setspace}
@@ -6,7 +6,7 @@
 \usepackage{ifxetex,ifluatex}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[unicode=true]{hyperref}
+\usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{authblk}
 \usepackage{eso-pic,lipsum}
@@ -27,7 +27,11 @@
 \begin{document}
 \title{\huge Latent Dimensionality Reduction: An Algorithmic Method for Interpreting Black Box Models \\
 \Large \emph{DRAFT}}
-\author{\emph{Elias Kassell, Fred Farrell}}
+\author[1]{Elias Kassell}
+\author[2]{Fred Farrell}
+
+\affil[1]{\href{mailto:eliaskassell@gmail.com}{eliaskassell@gmail.com}}
+\affil[2]{\href{mailto:ffarrell@illumina.com}{ffarrell@illumina.com}}
 \date{September 2019}
 \maketitle
 
@@ -43,32 +47,30 @@ Thanks to Illumina\textsuperscript{\textregistered} for supporting this research
 
 When training a model to make predictions in situations where interpretability is not required, the main goal is to maximise predictive accuracy \cite{breiman2001statistical}. Often black box models have a higher predictive accuracy than more interpretable solutions, particularly in higher dimensional or more complex problems \cite{schmidhuber2015deep}. Because of the uninterpretability of these models, they become impractical for situations where it is a necessity to understand why a model has chosen a particular output as its prediction, and what effect changes to values of the input features will have on the output of the model.
 
-Some examples of uses of model interpretation in real world applications include
+Some examples generic uses of model interpretation in real world applications include
 
 \begin{enumerate}
 \item Understanding the quality of a systems current understanding \cite{amershi2011effective}. 
 
 \item Interpreting how the value of a feature, or subset of features, affects a model's prediction (henceforth referred to as "feature interpretation"). For example, in a medical setting this interpretation can be used for suggesting the relation between features and a diagnosis. In another example, for manufacturing this interpretation can provide target values for the underlying processes involved in quality of produce.
 
-\item The ability to use a model when not all values for the input features are present. By integrating across features which are not present, the certainty of a models prediction can be estimated. Current methods, such as imputing values for features which are not present, ignores the variability of the absent features across the feature space, which LDR can provide.
+\item The ability to use a model when not all values for the input features are present. By integrating across features which are not present, the certainty of a model's prediction can be estimated. Current methods, such as imputing values for features which are not present, ignores the variability of the absent features across the feature space, which LDR can provide.
 \end{enumerate}
 
 \section{The Algorithm}
 
-The phrase \textit{(Optional)} here is with regards to outlier detection, which is sensible for real world usage, but not necessary as this method can be used to estimate reduced dimensionality across any space.
-
 \begin{enumerate}
 \item Scale the original data so it falls into [0, 1] intervals.
 \item Train a predictive model on the scaled data.
-\item (Optional) Train an outlier detection predictive model on the scaled data.
-\item Create a KDE (kernel density estimate) \cite{parzen1962estimation} of the training samples with a bandwidth $h$ (In most cases this is best set equal to $\frac{1}{r}$). (Optional) to improve the visualization, normalize the training to produce a constant density output.
-\item Sample $n$ new points from the kernel density, using the predictive model to make a prediction at each point. (Optional) Weight the prediction according to the outlier classifier, where outliers have no model certainty in the prediction at that point.
+\item \textit{(Optional)} \footnote{\textit{(Optional)} here indicates that this is a sensible step when using typical predictive models. These steps are however not necessary as LDR can be used to estimate reduced dimensionality across any space.} Train an outlier detection predictive model on the scaled data.
+\item Create a KDE (kernel density estimate) \cite{parzen1962estimation} of the training samples with a bandwidth $h$ (In most cases this is best set equal to $\frac{1}{r}$). \textit{(Optional)} to improve the visualization, normalize the training to produce a constant density output.
+\item Sample $n$ new points from the kernel density, using the predictive model to make a prediction at each point. \textit{(Optional)} Weight the prediction according to the outlier classifier, where outliers have no model certainty in the prediction at that point.
 \item Bin the samples according to regular intervals. For each dimension, group points with resolution $r$, reducing the value of the bin to the mean prediction across it.
 \end{enumerate}
 
 \section{Generated Data Classification Example}
 
-5000 samples are generated for two features from a 2 dimensional normal distribution with a mean of 0.5 and standard distribution of $\frac{1}{6}$, with any values outside the unit interval being scaled to the closest value in the interval. The KDE of each feature can be seen in figure \ref{fig:gen-kde}. Classes are assigned with the division set to be either side of where the values to the left of the peak of \textit{Normal 1}. The data is then split across a 0.7/0.3 training/testing split. A single DT (decision tree) achieved an unsurprising accuracy of 100\%. 
+5000 samples are generated for two features from a 2 dimensional normal distribution with a mean of 0.5 and standard distribution of $\frac{1}{6}$, with any values outside the unit interval being scaled to the closest value in the interval. The KDE of each feature can be seen in figure \ref{fig:gen-kde}. Classes are assigned by splitting the \textit{Normal 1} feature in two, with one class falling to the left side of the peak and the other to the right. The data is then split across a 0.7/0.3 training/testing split. A single DT (decision tree) achieved an unsurprising accuracy of 100\%. 
 
 \begin{figure}
 \centering
@@ -103,13 +105,13 @@ Applying LDR with a resolution of 50 to the raw decision tree prediction results
 \begin{figure}
 \centering
 \includegraphics[width=0.6\columnwidth]{img/gen_scat.png}
-\caption{Scatter plot of model predictions on raw generated data.}
+\caption{Naive scatter plot of model predictions on raw generated data.}
 \label{fig:gen-scat}
 \end{figure}
 
 \section{Classification Example}
 
-The Wisonsin breast cancer dataset \cite{breastcancer} (provided by scikit \cite{pedregosa2011scikit}) is used as it has 31 dimensions, a significant number. The aim with the dataset is to classify the tumor as either malignant or benign. There are 569 samples in total, with 357 benign and 212 malignant.
+The Wisonsin breast cancer dataset \cite{breastcancer} (provided by Scikit \cite{pedregosa2011scikit}) is used as it has 31 dimensions, a significant number. The aim with the dataset is to classify the tumor as either malignant or benign. There are 569 samples in total, with 357 benign and 212 malignant.
 
 \subsection{Random Forest and Isolation Forest Interpolation}
 
@@ -138,7 +140,7 @@ A 100 estimator RF (Random Forest) \cite{liaw2002classification} achieved an F1 
 
 \subsection{Neural Network and IF Interpolation}
 
-A 3 layer feed forward Neural Network (NN) was used (via pytorch \cite{paszke2017automatic}), consisting of an input layer, a hidden layer where tanh is applied, and an output layer. Softmax is applied when making predictions, and the final certainty of the prediction is calculated by calculating the proportion of the largest weighted class out of all weightings. The NN was trained over 50,000 epochs and achieved an F1 score of 0.961, slightly worse than the RF. The resulting LDR of the same features can be seen in figure \ref{fig:interp-nn-if}
+A 3 layer feed forward Neural Network (NN) was used (via PyTorch \cite{paszke2017automatic}), consisting of an input layer, a hidden layer where tanh is applied, and an output layer. Softmax is applied when making predictions, and the final certainty of the prediction is calculated by calculating the proportion of the largest weighted class out of all weightings. The NN was trained over 50,000 epochs and achieved an F1 score of 0.961, slightly worse than the RF. The resulting LDR of the same features can be seen in figure \ref{fig:interp-nn-if}
 
 \begin{figure}
 \centering
@@ -167,7 +169,7 @@ There is very little discrepancy between the two LDR representations, both of wh
 
 \section{Regression Example}
 
-A similar method as with the classification was applied to the Boston House Price dataset \cite{bostonhouse} (also provided by scikit). This dataset has 14 dimensions, where the target is to predict the house price based off of quantitative factors such as age of the house, the number of rooms, and the per capita crime rate of the time within which is situated. Some interesting relations are made immediately available from the LDR, shown in figure \ref{fig:reg-rf-if-matrix}, are
+A similar method as with the classification was applied to the Boston House Price dataset \cite{bostonhouse} (also provided by Scikit). This dataset has 14 dimensions, where the target is to predict the house price based off of quantitative factors such as age of the house, the number of rooms, and the per capita crime rate of the town within which it is situated. Some interesting relations are made immediately available from the LDR, shown in figure \ref{fig:reg-rf-if-matrix}, are
 
 \begin{figure}
 \centering

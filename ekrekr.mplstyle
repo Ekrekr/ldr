@@ -143,8 +143,8 @@ lines.markersize      : 10     ## marker size, in points
 ## See https://matplotlib.org/api/artist_api.html#module-matplotlib.patches
 ## for more information on patch properties.
 #patch.linewidth       : 1      ## edge width in points.
-patch.facecolor       : f5b500
-patch.edgecolor       : 69788e  ## if forced, or patch is not filled
+patch.facecolor       : 4063b0
+patch.edgecolor       : 4063b0  ## if forced, or patch is not filled
 #patch.force_edgecolor : False  ## True to always use edgecolor
 #patch.antialiased     : True   ## render patches in antialiased (no jaggies)
 
@@ -152,7 +152,7 @@ patch.edgecolor       : 69788e  ## if forced, or patch is not filled
 ## ***************************************************************************
 ## * HATCHES                                                                 *
 ## ***************************************************************************
-hatch.color     : 69788e
+hatch.color     : 969696
 hatch.linewidth : 2.0
 
 
@@ -170,24 +170,24 @@ hatch.linewidth : 2.0
 #boxplot.showfliers  : True
 #boxplot.meanline    : False
 
-boxplot.flierprops.color           : 69788e
+boxplot.flierprops.color           : 969696
 #boxplot.flierprops.marker          : o
 #boxplot.flierprops.markerfacecolor : none
-boxplot.flierprops.markeredgecolor : 69788e
+boxplot.flierprops.markeredgecolor : 969696
 #boxplot.flierprops.markeredgewidth : 1.0
 #boxplot.flierprops.markersize      : 6
 #boxplot.flierprops.linestyle       : none
 #boxplot.flierprops.linewidth       : 1.0
 
-boxplot.boxprops.color     : 69788e
+boxplot.boxprops.color     : 969696
 #boxplot.boxprops.linewidth : 1.0
 #boxplot.boxprops.linestyle : -
 
-boxplot.whiskerprops.color     : 69788e
+boxplot.whiskerprops.color     : 969696
 #boxplot.whiskerprops.linewidth : 1.0
 #boxplot.whiskerprops.linestyle : -
 
-boxplot.capprops.color     : 69788e
+boxplot.capprops.color     : 969696
 #boxplot.capprops.linewidth : 1.0
 #boxplot.capprops.linestyle : -
 
@@ -258,7 +258,7 @@ font.family  : sans-serif
 font.size    : 12.0
 
 #font.serif      : DejaVu Serif, Bitstream Vera Serif, Computer Modern Roman, New Century Schoolbook, Century Schoolbook L, Utopia, ITC Bookman, Bookman, Nimbus Roman No9 L, Times New Roman, Times, Palatino, Charter, serif
-font.sans-serif : Roboto
+font.sans-serif : Open Sans
 #font.cursive    : Apple Chancery, Textile, Zapf Chancery, Sand, Script MT, Felipa, cursive
 #font.fantasy    : Comic Sans MS, Chicago, Charcoal, ImpactWestern, Humor Sans, xkcd, fantasy
 #font.monospace  : DejaVu Sans Mono, Bitstream Vera Sans Mono, Computer Modern Typewriter, Andale Mono, Nimbus Mono L, Courier New, Courier, Fixed, Terminal, monospace
@@ -270,7 +270,7 @@ font.sans-serif : Roboto
 ## The text properties used by `text.Text`.
 ## See https://matplotlib.org/api/artist_api.html#module-matplotlib.text
 ## for more information on text properties
-text.color : 69788e
+text.color : 252525
 
 
 ## ***************************************************************************
@@ -348,21 +348,21 @@ text.color : 69788e
 ## default fontsizes for ticklabels, and so on.  See
 ## https://matplotlib.org/api/axes_api.html#module-matplotlib.axes
 axes.facecolor     : dde1e6   ## axes background color
-axes.edgecolor     : ffffff  ## axes edge color
+axes.edgecolor     : f0f0f0  ## axes edge color
 axes.linewidth     : 1.5     ## edge linewidth
 axes.grid          : True    ## display grid or not
 #axes.grid.axis     : both    ## which axis the grid should apply to
 #axes.grid.which    : major   ## gridlines at {major, minor, both} ticks
 #axes.titlelocation : center  ## alignment of the title: {left, right, center}
 #axes.titlesize     : large   ## fontsize of the axes title
-axes.titleweight   : bold  ## font weight of title
+axes.titleweight   : regular  ## font weight of title
 #axes.titlecolor    : 3d4751    ## color of the axes title, auto falls back to text.color
                               ## as default value
 #axes.titlepad      : 6.0     ## pad between axes and title in points
 #axes.labelsize     : medium  ## fontsize of the x any y labels
 #axes.labelpad      : 4.0     ## space between label and axis
 axes.labelweight   : bold  ## weight of the x and y labels
-axes.labelcolor    : 69788e
+axes.labelcolor    : 969696
 axes.axisbelow     : True    ## draw axis gridlines and ticks:
                               ##     - below patches (True)
                               ##     - above patches but below lines ('line')
@@ -396,7 +396,7 @@ axes.axisbelow     : True    ## draw axis gridlines and ticks:
 #axes.unicode_minus : True  ## use Unicode for the minus symbol
                             ## rather than hyphen.  See
                             ## https://en.wikipedia.org/wiki/Plus_and_minus_signs#Character_codes
-axes.prop_cycle : cycler('color', ['f5b500', '328ed1', '27aa36', 'de3439', 'c6429d', '14d4d1', '6b4345', '798fed', '69788E'])
+axes.prop_cycle : cycler('color', ['4063b0', 'e39a36', 'abbe51', 'd92120', '781c81', '62ac9a'])
                    ## color cycle for plot lines as list of string colorspecs:
                    ##     single letter, long name, or web-style hex
 				   ## As opposed to all other paramters in this file, the color
@@ -448,7 +448,7 @@ axes.prop_cycle : cycler('color', ['f5b500', '328ed1', '27aa36', 'de3439', 'c642
 #xtick.minor.width   : 0.6     ## minor tick width in points
 #xtick.major.pad     : 3.5     ## distance to major tick label in points
 #xtick.minor.pad     : 3.4     ## distance to the minor tick label in points
-xtick.color         : 69788e   ## color of the tick labels
+xtick.color         : 969696   ## color of the tick labels
 #xtick.labelsize     : medium  ## fontsize of the tick labels
 #xtick.direction     : out     ## direction: {in, out, inout}
 #xtick.minor.visible : False   ## visibility of minor ticks on x-axis
@@ -468,7 +468,7 @@ xtick.color         : 69788e   ## color of the tick labels
 #ytick.minor.width   : 0.6     ## minor tick width in points
 #ytick.major.pad     : 3.5     ## distance to major tick label in points
 #ytick.minor.pad     : 3.4     ## distance to the minor tick label in points
-ytick.color         : 69788e   ## color of the tick labels
+ytick.color         : 969696   ## color of the tick labels
 #ytick.labelsize     : medium  ## fontsize of the tick labels
 #ytick.direction     : out     ## direction: {in, out, inout}
 #ytick.minor.visible : False   ## visibility of minor ticks on y-axis
@@ -514,7 +514,7 @@ legend.edgecolor     : dde1e6      ## background patch boundary color
 #legend.borderaxespad : 0.5  ## the border between the axes and legend edge
 #legend.columnspacing : 2.0  ## column separation
 
-
+sudo chown -R user:user /Users/eli/Library/Jupyter/
 ## ***************************************************************************
 ## * FIGURE                                                                  *
 ## ***************************************************************************
@@ -523,8 +523,8 @@ legend.edgecolor     : dde1e6      ## background patch boundary color
 #figure.titleweight : normal    ## weight of the figure title
 figure.figsize     : 12, 8  ## figure size in inches
 #figure.dpi         : 100       ## figure dots per inch
-figure.facecolor   : ffffff     ## figure facecolor
-figure.edgecolor   : ffffff     ## figure edgecolor
+figure.facecolor   : f0f0f0     ## figure facecolor
+figure.edgecolor   : f0f0f0     ## figure edgecolor
 #figure.frameon     : True      ## enable figure frame
 #figure.max_open_warning : 20   ## The maximum number of figures to open through
                                 ## the pyplot interface before emitting a warning.
@@ -558,7 +558,7 @@ figure.edgecolor   : ffffff     ## figure edgecolor
 ## ***************************************************************************
 #image.aspect : equal            ## {equal, auto} or a number
 #image.interpolation  : antialiased  ## see help(imshow) for options
-image.cmap   : Blues          ## A colormap name, gray etc...
+image.cmap   : Spectral          ## A colormap name, gray etc...
 #image.lut    : 256              ## the size of the colormap lookup table
 #image.origin : upper            ## {lower, upper}
 #image.resample  : True
@@ -636,10 +636,10 @@ scatter.marker : o         ## The default marker type for scatter plots.
 ## ***************************************************************************
 ## The default savefig params can be different from the display params
 ## e.g., you may want a higher resolution, or to make the figure
-## background ffffff
+background ffffff
 #savefig.dpi       : figure      ## figure dots per inch or 'figure'
 savefig.facecolor : ffffff       ## figure facecolor when saving
-savefig.edgecolor : ffffff       ## figure edgecolor when saving
+savefig.edgecolor : f0f0f0       ## figure edgecolor when saving
 #savefig.format    : png         ## {png, ps, pdf, svg}
 #savefig.bbox      : standard    ## {tight, standard}
                                  ## 'tight' is incompatible with pipe-based animation
