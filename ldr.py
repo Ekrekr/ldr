@@ -289,34 +289,48 @@ class LDR:
         """
         Visualizes individual effect of all selected features on the data.
 
+        Plots each axes in a roughly square format.
+
         Args:
             title: Title to give plot, if not None.
             save: Path to save file, if not None.
         """
-        rows = self.D_bins.columns
-        n_rows = len(rows)
+        features = self.D_bins.columns
+        n_features = len(features)
+        n_rows = int(np.sqrt(n_features))
+        n_cols = int(np.ceil(n_features / n_rows))
         colors = plt.get_cmap("Spectral")
-        fig, axes = plt.subplots(nrows=n_rows, ncols=1,
-                                 figsize=(8.0, n_rows * 4.0))
-        for i, row in enumerate(rows):
-            min_val = self.min_max_vals[row]["min"]
-            max_val = self.min_max_vals[row]["max"]
+        fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols,
+                                 figsize=(5.0 * n_cols, n_rows * 4.0 + 2.0))
+        for i, feature in enumerate(features):
+            row = int(i / n_rows)
+            col = i % n_rows
+            min_val = self.min_max_vals[feature]["min"]
+            max_val = self.min_max_vals[feature]["max"]
 
             # Select mid values of intervals for x values.
-            bar_vals = self.D_bins[row] - 0.5
+            bar_vals = self.D_bins[feature] - 0.5
             x = [self._rescale(min_val, max_val, i.mid)
                  for i in np.array(bar_vals.keys())]
             y = bar_vals.values
             c = [colors(i+0.5) for i in y]
 
-            axes[i].bar(x=x, height=y,
-                        width=(max_val - min_val) / len(x) * 1.05, color=c)
-            axes[i].set_ylim(-0.5, 0.5)
-            axes[i].set_yticks(np.arange(-0.5, 0.75, 0.25))
-            axes[i].set_xlim(min_val, max_val)
-            axes[i].set_xticks(np.linspace(min_val, max_val, 5))
-            axes[i].grid(False)
-            axes[i].set_ylabel(self._break_text(row))
+            axes[col, row].bar(x=x, height=y,
+                               width=(max_val - min_val) / len(x) * 1.05,
+                               color=c)
+            axes[col, row].set_ylim(-0.5, 0.5)
+            axes[col, row].set_yticks(np.arange(-0.5, 0.75, 0.25))
+            axes[col, row].set_xlim(min_val, max_val)
+            axes[col, row].set_xticks(np.linspace(min_val, max_val, 5))
+            axes[col, row].grid(False)
+            axes[col, row].set_xlabel(self._break_text(feature))
+
+        # Hide axes which have nothing plotted.
+        for i in range(n_features, n_rows * n_cols):
+            row = int(i / n_rows)
+            col = i % n_rows
+            print(f"Hiding row: {row}, col: {col}")
+            axes[col, row].set_visible(False)
 
         if title:
             fig.suptitle(title, size="26")
