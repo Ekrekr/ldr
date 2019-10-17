@@ -105,3 +105,21 @@ venv.bak/
 
 # mac specific files
 .DS_Store
+
+# Latex generation files.
+*.aux
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.run.xml
+*.synctex.gz
+
+# VSCode files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
