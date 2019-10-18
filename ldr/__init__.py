@@ -6,20 +6,11 @@ Classifier Certainty Visualization.
 import pandas as pd
 import numpy as np
 import sklearn
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import copy
-import itertools
 import typing
-from sklearn.datasets import load_iris
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KernelDensity
 from sklearn.preprocessing import MinMaxScaler
-from sklearn import svm
-from scipy import stats
 
 np.random.seed(0)
 # Disable warning where bin cut is set (false positive).
@@ -30,7 +21,7 @@ class LDR:
     def __init__(self,
                  df: pd.DataFrame,
                  targets: pd.Series,
-                 problem_type,
+                 problem_type: str="class",
                  pos_val: any=None,
                  neg_val: any=None,
                  sample_pos: bool=True,
@@ -54,7 +45,6 @@ class LDR:
         self.sample_neg = sample_neg
         self.problem_type = problem_type
 
-        # Select numerical and scale the data to [0, 1].
         self.df = df.select_dtypes(include=np.number)
         self.targets = np.array(targets)
 

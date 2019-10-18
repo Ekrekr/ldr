@@ -514,7 +514,6 @@ legend.edgecolor     : dde1e6      ## background patch boundary color
 #legend.borderaxespad : 0.5  ## the border between the axes and legend edge
 #legend.columnspacing : 2.0  ## column separation
 
-sudo chown -R user:user /Users/eli/Library/Jupyter/
 ## ***************************************************************************
 ## * FIGURE                                                                  *
 ## ***************************************************************************

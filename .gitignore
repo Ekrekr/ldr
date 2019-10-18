@@ -108,6 +108,7 @@ venv.bak/
 
 # Latex generation files.
 *.aux
+*.bbl
 *.bcf
 *.blg
 *.fdb_latexmk

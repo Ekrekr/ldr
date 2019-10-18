@@ -1,8 +1,14 @@
 # LDR
 
-**Latent Dimensionality Reduction: A Method for Interpreting Black Box Models**.
+LDR stands for Latent Dimensionality Reduction, and is a method for interpreting black box models. It is deployed here as a python module.
 
-The pre-print can be found [here](write_up/write_up.pdf).
+Black box models often provide better results than more interpretable methods, and brings some [quite strong opions](https://arxiv.org/abs/1811.10154). This method aims to bridge that gap by providing a generic, reliable algorithmic method for interpreting any model. I define interpretability as:
+
+1. Understanding how a model understands the data, and whether it is similar to how a human would think of it.
+
+2. Interpreting how the value of a feature, or subset of features, affects a model's prediction (feature interpretation).
+
+3. The ability to use a model when not all values for the input features are present.
 
 ## Running the Code
 
