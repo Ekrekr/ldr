@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import pytest
+import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.datasets import load_breast_cancer, load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -84,7 +84,6 @@ class TestEntry:
                                                        data.target_names)
         targets = data_df["species"]
         data_df = data_df.drop(["species"], axis=1)
-        print(data_df.head())
         return data_df, targets
 
     def test_ldr_wine(self, wine_data):
@@ -106,8 +105,10 @@ class TestEntry:
         assert f1_score(y_test, preds, average="weighted") > 0.9
 
         # Fewer samples than default used to prevent longer run time of test.
-        ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_, 
+        ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_,
                              n_samples=1000)
 
-        ldr.certainty_plots()
-        # print(ldr.samples_bin.head())
+        path = os.path.join(os.path.dirname(__file__), "output", "wine_1d.png")
+        ldr.certainty_plots(title="Wine Classifier Certainty of Features",
+                            save=path,
+                            show=True)

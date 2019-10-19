@@ -3,6 +3,7 @@
 
 Classifier Certainty Visualization.
 """
+import os
 import copy
 import typing
 import sklearn
@@ -29,20 +30,22 @@ def set_style():
     """
     Sets matplotlib style to my ekrekr sheet.
     """
-    plt.style.use("ekrekr.mplstyle")
+    path = os.path.join(os.path.dirname(__file__), "resources/ekrekr.mplstyle")
+    plt.style.use(path)
 
 
 class LDR:
+    """
+    Latent Dimensonality Reduction.
+    """
     def __init__(self,
-                 df: pd.DataFrame,
+                 data_df: pd.DataFrame,
                  targets: pd.Series,
                  class_order: typing.List[any] = None,
                  verbose: bool = True,
-                 seed: int = None):
+                 seed: int = 0):
         """
-        Latent Dimensionality Reduction.
-
-        Prepares data for sampling.
+        Prepares data for sampling; not done until `density_estimate` called.
 
         LDR automatically detects whether it is a classification or a
         regression problem.
@@ -56,16 +59,18 @@ class LDR:
         done at the discretion of the user.
 
         Args:
-            df: The data (excluding targets).
+            data_df: The data (excluding targets).
             targets: The targets of the model.
             class_order: Order to display density. Only valid if class problem.
             self.verbose: Whether to print anything out.
             seed: Seed to set for numpy, if not none.
         """
         if seed:
-            np.random.seed(0)
+            np.random.seed(seed)
 
-        self.df = df
+        set_style()
+
+        self.data_df = data_df
         self.targets = np.array(targets)
         # The list of unique values is the order of classes if not specified.
         self.class_order = np.array(class_order or list(set(self.targets)))
@@ -77,19 +82,22 @@ class LDR:
         self.k_dens = None
         self.n_bins = None
         self.samples = None
+        self.classes = None
         self.class_bins = None
         self.feature_bins = None
+        self.intervals = None
+        self.density_estimate_run = False
 
         self.problem_type = self._determine_problem_type()
         self._check_class_order()
         self._check_data_numerical()
 
         scaler = MinMaxScaler()
-        scale = scaler.fit_transform(self.df)
+        scale = scaler.fit_transform(self.data_df)
         self.scaled = pd.DataFrame(scale)
 
         # Reshuffle the scaled columns to be same as input; nicer for user.
-        self.scaled.columns = self.df.columns
+        self.scaled.columns = self.data_df.columns
 
         # Create structure to store min and max values from scaling. This is
         # useful for plotting.
@@ -146,10 +154,10 @@ class LDR:
         """
         Checks that input data is numerical. If not, converts and warns user.
         """
-        columns = self.df.columns
-        self.df = self.df.select_dtypes(include=np.number)
-        if set(self.df.columns) != set(columns):
-            removed_cols = [i for i in columns if i not in self.df.columns]
+        columns = self.data_df.columns
+        self.data_df = self.data_df.select_dtypes(include=np.number)
+        if set(self.data_df.columns) != set(columns):
+            removed_cols = [i for i in columns if i not in self.data_df.columns]
             print(f"Data not numerical. Removed: {removed_cols}.")
 
     # def _weight_samples(self):
@@ -196,6 +204,14 @@ class LDR:
     #             "At least one of sample_pos and sample_neg must be True"
     #             "for classification problems.")
 
+    def _check_density_estimate_run(self):
+        """
+        Checks that density estimate has been run, otherwise raises exception.
+        """
+        if self.density_estimate_run is False:
+            raise Exception(f"Function called that requires desnity estimate, "
+                            f"but has not been run.")
+
     def density_estimate(self,
                          func: any,
                          classes: list,
@@ -227,6 +243,7 @@ class LDR:
             n_bins: The resolution of the binning, post sampling.
         """
         self.func = func
+        self.classes = classes
         self.n_samples = n_samples
         self.k_dens = k_dens
         self.n_bins = n_bins
@@ -255,8 +272,9 @@ class LDR:
                 self.feature_bins[feature][key] = v_class[feature]
         for key in self.feature_bins:
             self.feature_bins[key] = pd.DataFrame(self.feature_bins[key])
-        
 
+        self.density_estimate_run = True
+        
     def _bin_values(self,
                     predictions: np.array) -> pd.DataFrame:
         """
@@ -298,6 +316,9 @@ class LDR:
             # Select mid value of interval as index.
             class_bins[col] = tmp["prediction"]
 
+            # Useful to store intervals.
+            self.intervals = tmp.index
+
         # Replace nan values with 0 as that is the completely uncertain
         # value. Nan values occur where no values are present, as they are not
         # in the sample space.
@@ -308,18 +329,102 @@ class LDR:
 
         return class_bins
 
-    def certainty_plots(self):
+    def _rescale(self,
+                 min_val: float,
+                 max_val: float,
+                 x: float):
+        """
+        Rescales variables back from unit interval.
+
+        Args:
+            min_val: Value that 0 would be converted from.
+            max_val: Value that 1 would be converted from.
+            x: The value to convert.
+        """
+        return (max_val - min_val) * x + min_val
+
+    def _break_text(self,
+                    txt: str):
+        """
+        Breaks text with new line every 18 chars. Max 3 lines.
+
+        Args:
+            txt: The text to break.
+        """
+        ret = txt[:18]
+        if len(txt) >= 18:
+            ret += ("\n" + txt[18:36])
+        if len(txt) >= 36:
+            ret += ("\n" + txt[36:54])
+        return ret
+
+    def certainty_plots(self,
+                        title: str = None,
+                        save: str = None,
+                        show: bool = False):
         """
         Plots 1D certainty plots for different features.
 
         For each feature a line graph is drawn, and for each graph each of the
         different class certainties across the data is drawn.
-        """
-        # print("bins:", self.feature_bins)
-        for feature in self.feature_bins.keys():
-            lines = self.feature_bins[feature].plot.line()
-            plt.show()
 
+        Density estimate must have been run beforehand.
+
+        Args:
+            title: Suptitle to show, if not None.
+            save: Path to save file as, if not None.
+            show: Calls plt.show() if True.
+        """
+        self._check_density_estimate_run()
+
+        features = list(self.feature_bins.keys())
+        n_features = len(features)
+        classes = self.feature_bins[features[0]].columns
+        n_classes = len(classes)
+        colors = utils.gen_colors(n_classes)
+        n_rows = int(np.sqrt(n_features))
+        n_cols = int(np.ceil(n_features / n_rows))
+
+        fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols,
+                                 figsize=(5.0 * n_cols, n_rows * 4.0 + 2.0))
+
+        for i, feature in enumerate(features):
+            row, col = int(i / n_rows), i % n_rows
+            min_val = self.min_max_vals[feature]["min"]
+            max_val = self.min_max_vals[feature]["max"]
+
+            # Select mid values of intervals for x values on plot.
+            x_vals = [self._rescale(min_val, max_val, i.mid)
+                      for i in np.array(self.intervals)]
+
+            j = 0
+            for key, v_class in self.feature_bins[feature].iteritems():
+                axes[col, row].plot(x_vals, v_class.values, color=colors[j])
+                j += 1
+            axes[col, row].set_ylim(0.0, 1.0)
+            # Overshooting the arange causes 1.0 to be visible.
+            axes[col, row].set_yticks(np.arange(0.0, 1.25, 0.25))
+            axes[col, row].set_xlim(min_val, max_val)
+            axes[col, row].set_xticks(np.linspace(min_val, max_val, 5))
+            axes[col, row].grid(True)
+            axes[col, row].set_xlabel(self._break_text(feature))
+            axes[col, row].legend(labels=classes, title="Classes",
+                                  loc="upper right")
+
+        # Hide axes which have nothing plotted.
+        for i in range(n_features, n_rows * n_cols):
+            row, col = int(i / n_rows), i % n_rows
+            axes[col, row].set_visible(False)
+
+        if title:
+            fig.suptitle(title, size="26")
+        fig.tight_layout(rect=[0, 0, 1, 0.96])
+
+        if save:
+            plt.savefig(save)
+
+        if show:
+            plt.show()
 
     # def density_scatter(self,
     #                     col: str,
@@ -390,35 +495,6 @@ class LDR:
     #     D_mid_bins.plot.bar(xlim=(-0.15, 1.15), ylim=(-0.6, 0.6),
     #                         title=title, figsize=figsize)
     #     plt.show()
-
-    # def _rescale(self,
-    #              min_val: float,
-    #              max_val: float,
-    #              x: float):
-    #     """
-    #     Rescales variables back from unit interval.
-
-    #     Args:
-    #         min_val: Value that 0 would be converted from.
-    #         max_val: Value that 1 would be converted from.
-    #         x: The value to convert.
-    #     """
-    #     return (max_val - min_val) * x + min_val
-
-    # def _break_text(self,
-    #                 txt: str):
-    #     """
-    #     Breaks text with new line every 18 chars. Max 3 lines.
-
-    #     Args:
-    #         txt: The text to break.
-    #     """
-    #     ret = txt[:18]
-    #     if len(txt) >= 18:
-    #         ret += ("\n" + txt[18:36])
-    #     if len(txt) >= 36:
-    #         ret += ("\n" + txt[36:54])
-    #     return ret
 
     # def vis_1d_separate(self,
     #                     title: str=None,
@@ -552,8 +628,8 @@ class LDR:
     #         axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
     #             -0.5, 0.5, 41), cmap="Spectral")
     #         if dots:
-    #             axes[x, y].scatter(self.df[x_col],
-    #                                self.df[y_col], c="#000000",
+    #             axes[x, y].scatter(self.data_df[x_col],
+    #                                self.data_df[y_col], c="#000000",
     #                                s=3, marker="o", alpha=0.2, zorder=1)
     #         axes[x, y].set_xlim(min_x_val, max_x_val)
     #         axes[x, y].set_ylim(min_y_val, max_y_val)

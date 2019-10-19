@@ -21,7 +21,7 @@ def is_np_numerical(inp_list) -> bool:
     return all(isinstance(i, np.number) for i in inp_list)
 
 
-def gen_colors(num=6, hue=.01, lightness=.6, saturation=.65) -> typing.List:
+def gen_colors(num, hue=.01, lightness=.6, saturation=.65) -> typing.List:
     """
     Generates diverging colors for plotting.
 
