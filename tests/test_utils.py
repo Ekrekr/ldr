@@ -4,8 +4,6 @@ LDR test_utils
 
 Tests `ldr.utils`.
 """
-import pytest
-import pandas as pd
 import numpy as np
 from ldr import utils
 
@@ -35,7 +33,43 @@ class TestUtils:
         assert len(few_cols) == 4
 
         many_cols = utils.gen_colors(50)
-        assert len(many_cols) == 50
+        assert len(many_cols) == 50 
 
-        assert max(max(many_cols)) < 1.0
-        assert min(min(many_cols)) > 0.0
+        assert max([max(i) for i in many_cols]) < 1.0
+        assert min([min(i) for i in many_cols]) > 0.0
+
+    def test_find_nearest(self):
+        """
+        Tests number found in array is indeed nearest.
+        """
+        test_arr = np.array([0.0, 1.0, 2.0, 3.0])
+        print(utils.find_nearest(test_arr, 1.2))
+        print(utils.find_nearest(test_arr, 1.5))
+        assert utils.find_nearest(test_arr, 1.2) == 1.0
+        assert utils.find_nearest(test_arr, 1.0) == 1.0
+        assert utils.find_nearest(test_arr, 2.51) == 3.0
+        assert utils.find_nearest(test_arr, 2.5) == 2.0
+
+    def test_reduce_colors(self):
+        """
+        Tests elementwise weighting of colors.
+        """
+        colors = np.array([np.array([0.9, 0.3, 0.1]),
+                           np.array([0.4, 0.8, 0.3]),
+                           np.array([0.2, 0.3, 0.9]),
+                           np.array([0.7, 0.1, 0.2])])
+
+        arr = 
+
+        arr = np.array([[[np.array([0, 1, 0]), np.array([0, 0, 1])],
+                         [np.array([1, 0, 0])]],
+                        [[[],
+                         np.array([0, 0, 1])]],
+                        [[[], []]],
+                        [[[], []]]])
+
+        print("Shape:", arr.shape)
+
+        w_cols = utils.reduce_colors(arr, colors)
+
+        print("arr:", w_cols)

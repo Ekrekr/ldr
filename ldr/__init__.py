@@ -75,6 +75,7 @@ class LDR:
         # The list of unique values is the order of classes if not specified.
         self.class_order = np.array(class_order or list(set(self.targets)))
         self.verbose = verbose
+        self.colors = utils.gen_colors(len(self.class_order))
 
         # These are variables that get assigned during density estimation.
         self.func = None
@@ -82,6 +83,7 @@ class LDR:
         self.k_dens = None
         self.n_bins = None
         self.samples = None
+        self.sample_predictions = None
         self.classes = None
         self.class_bins = None
         self.feature_bins = None
@@ -103,10 +105,10 @@ class LDR:
         # useful for plotting.
         min_max = scaler.inverse_transform([[0 for i in self.scaled.columns],
                                             [1 for i in self.scaled.columns]])
-        self.min_max_vals = pd.DataFrame(index=["min", "max"])
+        self.min_max = pd.DataFrame(index=["min", "max"])
         for i, col in enumerate(self.scaled.columns):
-            self.min_max_vals[col] = [np.round(min_max[0][i], 2),
-                                      np.round(min_max[1][i], 2)]
+            self.min_max[col] = [np.round(min_max[0][i], 2),
+                                 np.round(min_max[1][i], 2)]
 
         # If regression, targets are in scaled; then need to be removed.
         if self.problem_type == ProblemType.regression:
@@ -157,7 +159,8 @@ class LDR:
         columns = self.data_df.columns
         self.data_df = self.data_df.select_dtypes(include=np.number)
         if set(self.data_df.columns) != set(columns):
-            removed_cols = [i for i in columns if i not in self.data_df.columns]
+            removed_cols = [
+                i for i in columns if i not in self.data_df.columns]
             print(f"Data not numerical. Removed: {removed_cols}.")
 
     # def _weight_samples(self):
@@ -254,11 +257,12 @@ class LDR:
         # prediction.
         self.samples = pd.DataFrame(kernel.sample(self.n_samples))
         self.samples.columns = self.scaled.columns
-        predictions = self.func(self.samples)
+        self.sample_predictions = self.func(self.samples)
 
         self.class_bins = {}
         for i_class, v_class in enumerate(classes):
-            class_preds = np.array([i[i_class] for i in predictions])
+            class_preds = np.array(
+                [i[i_class] for i in self.sample_predictions])
             self.class_bins[v_class] = self._bin_values(class_preds)
 
         # Feature bins make plotting easier in some cases.
@@ -274,7 +278,7 @@ class LDR:
             self.feature_bins[key] = pd.DataFrame(self.feature_bins[key])
 
         self.density_estimate_run = True
-        
+
     def _bin_values(self,
                     predictions: np.array) -> pd.DataFrame:
         """
@@ -324,7 +328,7 @@ class LDR:
         # in the sample space.
         class_bins = class_bins.fillna(0.0)
 
-        # Remove additional prediction column.
+        # Remove additional prediction column, after storing.
         self.samples = self.samples.drop(["prediction"], axis=1)
 
         return class_bins
@@ -332,16 +336,16 @@ class LDR:
     def _rescale(self,
                  min_val: float,
                  max_val: float,
-                 x: float):
+                 val: float):
         """
         Rescales variables back from unit interval.
 
         Args:
             min_val: Value that 0 would be converted from.
             max_val: Value that 1 would be converted from.
-            x: The value to convert.
+            val: The value to convert.
         """
-        return (max_val - min_val) * x + min_val
+        return (max_val - min_val) * val + min_val
 
     def _break_text(self,
                     txt: str):
@@ -358,10 +362,10 @@ class LDR:
             ret += ("\n" + txt[36:54])
         return ret
 
-    def certainty_plots(self,
-                        title: str = None,
-                        save: str = None,
-                        show: bool = False):
+    def vis_1d_certainty(self,
+                         title: str = None,
+                         save: str = None,
+                         show: bool = False):
         """
         Plots 1D certainty plots for different features.
 
@@ -381,25 +385,25 @@ class LDR:
         n_features = len(features)
         classes = self.feature_bins[features[0]].columns
         n_classes = len(classes)
-        colors = utils.gen_colors(n_classes)
         n_rows = int(np.sqrt(n_features))
         n_cols = int(np.ceil(n_features / n_rows))
 
-        fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols,
-                                 figsize=(5.0 * n_cols, n_rows * 4.0 + 2.0))
+        fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(
+            n_cols * 5.0, n_rows * 4.0 + 2.0))
 
         for i, feature in enumerate(features):
             row, col = int(i / n_rows), i % n_rows
-            min_val = self.min_max_vals[feature]["min"]
-            max_val = self.min_max_vals[feature]["max"]
+            min_val = self.min_max[feature]["min"]
+            max_val = self.min_max[feature]["max"]
 
             # Select mid values of intervals for x values on plot.
             x_vals = [self._rescale(min_val, max_val, i.mid)
                       for i in np.array(self.intervals)]
 
             j = 0
-            for key, v_class in self.feature_bins[feature].iteritems():
-                axes[col, row].plot(x_vals, v_class.values, color=colors[j])
+            for _, v_class in self.feature_bins[feature].iteritems():
+                axes[col, row].plot(x_vals, v_class.values,
+                                    color=self.colors[j])
                 j += 1
             axes[col, row].set_ylim(0.0, 1.0)
             # Overshooting the arange causes 1.0 to be visible.
@@ -426,226 +430,128 @@ class LDR:
         if show:
             plt.show()
 
-    # def density_scatter(self,
-    #                     col: str,
-    #                     figsize: typing.Tuple[int, int]=(8, 4),
-    #                     save=None,
-    #                     title=None):
-    #     """
-    #     Plots provided model applied to samples of certainty.
+    def _bin_2d_values(self,
+                       x_col: str,
+                       y_col: str):
+        """
+        Bins VEGAS samples for Monte Carlo estimation for two features.
 
-    #     Args:
-    #         col: Column to plot.
-    #         figsize: Size of the figure (matplotlib).
-    #         save: Whether to save the file.
-    #         title: Title to give the figure, if not None.
-    #     """
-    #     self.D.plot.scatter(x="prediction", y=col, figsize=figsize,
-    #                         s=1)
-    #     if title:
-    #         plt.title(title)
-    #     if save:
-    #         plt.savefig(save)
-    #     plt.show()
+        Args:
+            x_col: A column to compare.
+            y_col: Other column to compare.
 
+        Returns:
+            Tuple of meshgrid X, Y, and mean color at Z.
+        """
+        # This is the resolution of the 2d mesh.
+        res_sub = np.linspace(0.0, 1.0, self.n_bins - 1)
 
-    # # def select_2d_bins(self):
+        # Find mid points for each bin, for selecting index of bin.
+        mid_points = np.array([i.mid for i in self.intervals])
 
-    # def scatter_plot_matrix(self,
-    #                         cols: list=None):
-    #     """
-    #     Creates scatterplot matrix of features.
+        min_max = self.min_max
+        min_x, max_x = min_max[x_col]["min"], min_max[x_col]["min"]
+        min_y, max_y = min_max[y_col]["min"], min_max[y_col]["min"]
 
-    #     Args:
-    #         cols: If None then all columns, otherwise subset specified.
-    #     """
-    #     if not cols:
-    #         to_plot = self.scaled
-    #     else:
-    #         to_plot = self.scaled[cols]
-    #     pd.plotting.scatter_matrix(to_plot)
-    #     plt.grid(False)
-    #     plt.show()
+        # Unscale limits from mesh grid for describing 2D space.
+        # x2d, y2d = np.meshgrid(
+        #     np.linspace(min_x, max_x, self.n_bins - 1),
+        #     np.linspace(min_y, max_y, self.n_bins - 1))
 
-    # def density_contour(self,
-    #                     col: str):
-    #     """
-    #     Plots the density contour of a column (feature).
+        # z2d = [[[i*j, i*j, i*j] for i in res_sub] for j in res_sub]
 
-    #     Args:
-    #         col: The column to plot the contour of.
-    #     """
-    #     self.D.plot.scatter(x="prediction", y=col)
-    #     plt.title(col + " value and certainty")
+        # Go through each prediction and put into nearest bin for Z values.
+        z2d = [[[] for i in res_sub] for j in res_sub]
+        for i_sample, sample in self.samples.iterrows():
+            col1_ind = int(utils.find_nearest(mid_points, sample[
+                x_col]) * (self.n_bins - 1) - 0.5)
+            col2_ind = int(utils.find_nearest(mid_points, sample[
+                y_col]) * (self.n_bins - 1) - 0.5)
+            z2d[col1_ind][col2_ind].append(self.sample_predictions[i_sample])
 
-    # def vis_1d(self,
-    #            figsize: typing.Tuple[float, float]=(16, 8),
-    #            title=None):
-    #     """
-    #     Visualizes effect of singular feature on the data.
+        cols_t = self.colors.T
 
-    #     Args:
-    #         figsize: Size of figure (matplotlib).
-    #         title: Title to give the figure, if not None.
-    #     """
-    #     # Shifting everything down 0.5 makes 0 the uncertain value.
-    #     D_mid_bins = copy.deepcopy(self.D_bins)
-    #     for col in D_mid_bins[:-1]:
-    #         D_mid_bins[col] = D_mid_bins[col] - 0.5
-    #     D_mid_bins.plot.bar(xlim=(-0.15, 1.15), ylim=(-0.6, 0.6),
-    #                         title=title, figsize=figsize)
-    #     plt.show()
+        # print("z2d[0]:", z2d[0])
 
-    # def vis_1d_separate(self,
-    #                     title: str=None,
-    #                     save: str=None):
-    #     """
-    #     Visualizes individual effect of all selected features on the data.
+        iters = range(self.n_bins - 1)
+        z2d = np.array([[utils.reduce_colors(
+            z2d[i][j], cols_t) for i in iters] for j in iters])
 
-    #     Plots each axes in a roughly square format.
+        # print("z2d[0] after:", z2d[0])
 
-    #     Args:
-    #         title: Title to give plot, if not None.
-    #         save: Path to save file, if not None.
-    #     """
-    #     features = self.D_bins.columns
-    #     n_features = len(features)
-    #     n_rows = int(np.sqrt(n_features))
-    #     n_cols = int(np.ceil(n_features / n_rows))
-    #     colors = plt.get_cmap("Spectral")
-    #     fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols,
-    #                              figsize=(5.0 * n_cols, n_rows * 4.0 + 2.0))
-    #     for i, feature in enumerate(features):
-    #         row = int(i / n_rows)
-    #         col = i % n_rows
-    #         min_val = self.min_max_vals[feature]["min"]
-    #         max_val = self.min_max_vals[feature]["max"]
+        return z2d, min_x, max_x, min_y, max_y
 
-    #         # Select mid values of intervals for x values.
-    #         bar_vals = self.D_bins[feature] - 0.5
-    #         x = [self._rescale(min_val, max_val, i.mid)
-    #              for i in np.array(bar_vals.keys())]
-    #         y = bar_vals.values
-    #         c = [colors(i+0.5) for i in y]
+    def vis_2d_certainty(self,
+                         title: str = None,
+                         save: str = None,
+                         show: bool = False,
+                         dots: bool = True):
+        """
+        Visualizes individual effects, 2D cross effects of selected features.
 
-    #         axes[col, row].bar(x=x, height=y,
-    #                            width=(max_val - min_val) / len(x) * 1.05,
-    #                            color=c)
-    #         axes[col, row].set_ylim(-0.5, 0.5)
-    #         axes[col, row].set_yticks(np.arange(-0.5, 0.75, 0.25))
-    #         axes[col, row].set_xlim(min_val, max_val)
-    #         axes[col, row].set_xticks(np.linspace(min_val, max_val, 5))
-    #         axes[col, row].grid(False)
-    #         axes[col, row].set_xlabel(self._break_text(feature))
+        The structure of the graphs drawn dynamically scales to follow a
+        particular layout. Consider features w, x, y, and z. What would be
+        drawn would look like:
 
-    #     # Hide axes which have nothing plotted.
-    #     for i in range(n_features, n_rows * n_cols):
-    #         row = int(i / n_rows)
-    #         col = i % n_rows
-    #         print(f"Hiding row: {row}, col: {col}")
-    #         axes[col, row].set_visible(False)
+        ```
+        (  ) (z ) (y ) (x )
+        (w ) (wz) (wy) (wx)
+        (x ) (xz) (xy) (  )
+        (y ) (zy) (  ) (  )
+        ```
 
-    #     if title:
-    #         fig.suptitle(title, size="26")
-    #     fig.tight_layout(rect=[0, 0, 1, 0.96])
+        * A singular feature (e.g. `(x )`) indicates a line graph showing the
+          certainty of each class when varying the value of the feature.
 
-    #     if save:
-    #         plt.savefig(save)
-    #     plt.show()
+        * A pair of features (e.g. `(xy)`) indicates the cross variation of
+          certainty when across two features.
 
-    # def vis_2d(self,
-    #            title: str=None,
-    #            save: str=None,
-    #            dots: bool=True):
-    #     """
-    #     Visualizes individual effects, 2D cross effects of selected features.
+        * An empty feature (e.g. `(  )`) indicates nothing drawn.
 
-    #     Args:
-    #         title: Title to give plot, if not None.
-    #         save: Path to save file, if not None.
-    #         dots: Whether to draw dots of VEGAS sampling.
-    #     """
-    #     np.random.seed(42)
-    #     colors = plt.get_cmap("Spectral")
-    #     cols = self.D_bins.columns
-    #     n_cols = len(cols)
-    #     fig, axes = plt.subplots(nrows=n_cols, ncols=n_cols,
-    #                              figsize=(n_cols * 5.0, n_cols * 4.5))
+        Args:
+            title: Suptitle to show, if not None.
+            save: Path to save file as, if not None.
+            show: Calls plt.show() if True.
+            dots: Whether to draw dots of VEGAS sampling.
+        """
+        features = list(self.feature_bins.keys())
+        n_features = len(features)
+        fig, axes = plt.subplots(nrows=n_features, ncols=n_features, figsize=(
+            n_features * 5.0, n_features * 4.0 + 2.0))
 
-    #     # Calculate the general [0, 1] meshgrid for contours.
-    #     res_sub = np.linspace(0.0, 1.0, self.n_bins - 1)
+        # Get coords for different sections of the triangle.
+        top_left_co = [(n_features - (x + 1), y + 1)
+                       for x, y in zip(*np.tril_indices(n_features - 1))]
+        bot_right_co = [(x + 2, n_features - y - 1)
+                        for x, y in zip(*np.tril_indices(n_features - 2))]
+        left_row = [(0, i + 1) for i in range(n_features - 1)]
+        top_row = [(i + 1, 0) for i in range(n_features - 1)]
 
-    #     # Find mid points for each bin, for selecting index of bin.
-    #     mid_points = np.array([i.mid for i in self.D_bins.index])
+        # # Plot contours in top left triangle coordinates.
+        # for i_x, i_y in top_left_co:
+        #     x_col = features[i_x - 1]
+        #     y_col = features[n_features - i_y]
 
-    #     # Finds nearest point of a value in an array.
-    #     def find_nearest(array, value):
-    #         array = np.asarray(array)
-    #         idx = (np.abs(array - value)).argmin()
-    #         return array[idx]
+        #     z2d, min_x, max_x, min_y, max_y = self._bin_2d_values(x_col, y_col)
 
-    #     # Get coords for different sections of the triangle.
-    #     top_left_co = [(n_cols - (x + 1), y + 1)
-    #                    for x, y in zip(*np.tril_indices(n_cols - 1))]
-    #     bot_right_co = [(x + 2, n_cols - y - 1)
-    #                     for x, y in zip(*np.tril_indices(n_cols - 2))]
-    #     left_row = [(0, i + 1) for i in range(n_cols - 1)]
-    #     top_row = [(i + 1, 0) for i in range(n_cols - 1)]
-    #     print("TL:", top_left_co)
-    #     print("BR:", bot_right_co)
-    #     print("LR:", left_row)
-    #     print("TR:", top_row)
-
-    #     # Plot contours in top right triangle coordinates.
-    #     for x, y in top_left_co:
-    #         print(x, y)
-    #         x_col = cols[x - 1]
-    #         y_col = cols[n_cols - y]
-    #         print(x_col, y_col)
-    #         min_x_val = self.min_max_vals[x_col]["min"]
-    #         max_x_val = self.min_max_vals[x_col]["max"]
-    #         min_y_val = self.min_max_vals[y_col]["min"]
-    #         max_y_val = self.min_max_vals[y_col]["max"]
-    #         # Unscale limits for axis.
-    #         Xm, Ym = np.meshgrid(
-    #             np.linspace(min_x_val, max_x_val, self.n_bins - 1),
-    #             np.linspace(min_y_val, max_y_val, self.n_bins - 1))
-    #         # Create an entry matrix.
-    #         Zm = [[[] for i in res_sub] for j in res_sub]
-    #         # Go through each prediction based on KDE and put into
-    #         # nearest bin.
-    #         for d, d_val in self.D.iterrows():
-    #             col1_ind = int(find_nearest(mid_points, d_val[
-    #                 x_col]) * (self.n_bins - 1) - 0.5)
-    #             col2_ind = int(find_nearest(mid_points, d_val[
-    #                 y_col]) * (self.n_bins - 1) - 0.5)
-    #             Zm[col1_ind][col2_ind].append(d_val["prediction"])
-    #         # Take the mean of value, move down to mid at 0, make
-    #         # outliers 100 so not drawn.
-    #         Zm = [[np.mean(Zm[i][j]) - 0.5 if len(Zm[i][j]) > 0
-    #               else 100 for i in range(self.n_bins - 1)] for j in
-    #               range(self.n_bins - 1)]
-    #         axes[x, y].contourf(Xm, Ym, Zm, levels=np.linspace(
-    #             -0.5, 0.5, 41), cmap="Spectral")
-    #         if dots:
-    #             axes[x, y].scatter(self.data_df[x_col],
-    #                                self.data_df[y_col], c="#000000",
-    #                                s=3, marker="o", alpha=0.2, zorder=1)
-    #         axes[x, y].set_xlim(min_x_val, max_x_val)
-    #         axes[x, y].set_ylim(min_y_val, max_y_val)
-    #         axes[x, y].set_xticks(np.linspace(min_x_val, max_x_val, 3))
-    #         axes[x, y].set_yticks(np.linspace(min_y_val, max_y_val, 3))
-    #         axes[x, y].yaxis.tick_right()
-    #         axes[x, y].yaxis.set_label_position("right")
-    #         axes[x, y].grid(False)
+        #     axes[i_x, i_y].imshow(z2d)
+        #     if dots:
+        #         axes[i_x, i_y].scatter(self.data_df[x_col],
+        #                                self.data_df[y_col], c="#000000",
+        #                                s=3, marker="o", alpha=0.2, zorder=1)
+        #     axes[i_x, i_y].set_xticks(np.linspace(min_x, max_x, 3))
+        #     axes[i_x, i_y].set_yticks(np.linspace(min_y, max_y, 3))
+        #     axes[i_x, i_y].yaxis.tick_right()
+        #     axes[i_x, i_y].yaxis.set_label_position("right")
+        #     axes[i_x, i_y].grid(False)
 
     #     # Add bar charts as charts on top row.
     #     for x, y in top_row:
     #         print(x, y)
     #         col = cols[x - 1]
     #         print(col)
-    #         min_val = self.min_max_vals[col]["min"]
-    #         max_val = self.min_max_vals[col]["max"]
+    #         min_val = self.min_max[col]["min"]
+    #         max_val = self.min_max[col]["max"]
 
     #         # Select mid values of intervals for x values.
     #         bar_vals = self.D_bins[col] - 0.5
@@ -669,8 +575,8 @@ class LDR:
     #         print(x, y)
     #         col = cols[n_cols - y]
     #         print(col)
-    #         min_val = self.min_max_vals[col]["min"]
-    #         max_val = self.min_max_vals[col]["max"]
+    #         min_val = self.min_max[col]["min"]
+    #         max_val = self.min_max[col]["max"]
 
     #         # Select mid values of intervals for x values.
     #         bar_vals = self.D_bins[col] - 0.5
@@ -691,18 +597,19 @@ class LDR:
     #         axes[x, y].grid(False)
     #         axes[x, y].set_ylabel(self._break_text(col), fontsize=18)
 
-    #     # Remove subplot in bottom right triangle.
-    #     for x, y in bot_right_co:
-    #         axes[x, y].set_visible(False)
+        # Remove subplot in bottom right triangle.
+        for x, y in bot_right_co:
+            axes[x, y].set_visible(False)
 
-    #     # Remove subplot in top left.
-    #     axes[0, 0].set_visible(False)
+        # Remove subplot in top left.
+        axes[0, 0].set_visible(False)
 
-    #     if title:
-    #         fig.suptitle(title, size="26")
-    #     fig.tight_layout(rect=[0, 0, 1, 0.96])
+        if title:
+            fig.suptitle(title, size="26")
+        fig.tight_layout(rect=[0, 0, 1, 0.96])
 
-    #     if save:
-    #         plt.savefig(save)
+        if save:
+            plt.savefig(save)
 
-    #     plt.show()
+        if show:
+            plt.show()

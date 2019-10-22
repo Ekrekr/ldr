@@ -68,7 +68,7 @@ class TestEntry:
 
         # print(ldr.samples_bin.head())
         # print(rf_clf.predict_proba(data_df))
-    
+
     @pytest.fixture(scope="module")
     def wine_data(self):
         """
@@ -84,6 +84,7 @@ class TestEntry:
                                                        data.target_names)
         targets = data_df["species"]
         data_df = data_df.drop(["species"], axis=1)
+        data_df = data_df[data_df.columns[:4]]
         return data_df, targets
 
     def test_ldr_wine(self, wine_data):
@@ -102,13 +103,19 @@ class TestEntry:
         preds = rf_clf.predict(x_test)
 
         # sanity check that F1 score is above 0.9.
-        assert f1_score(y_test, preds, average="weighted") > 0.9
+        assert f1_score(y_test, preds, average="weighted") > 0.8
 
         # Fewer samples than default used to prevent longer run time of test.
         ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_,
                              n_samples=1000)
 
-        path = os.path.join(os.path.dirname(__file__), "output", "wine_1d.png")
-        ldr.certainty_plots(title="Wine Classifier Certainty of Features",
-                            save=path,
-                            show=True)
+        # path = os.path.join(os.path.dirname(__file__), "output", "wine_1d.png")
+        # ldr.vis_1d_certainty(title="Wine Classifier Certainty",
+        #                      save=path,
+        #                      show=False)
+
+        path = os.path.join(os.path.dirname(__file__), "output", "wine_2d.png")
+        ldr.vis_2d_certainty(title="Wine Classifier Certainty Matrix",
+                             save=path,
+                             show=True)
+
