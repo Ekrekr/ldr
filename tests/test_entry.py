@@ -57,17 +57,22 @@ class TestEntry:
         # sanity check that F1 score is above 0.9.
         assert f1_score(y_test, preds, pos_label="malignant") > 0.9
 
-        def func(data_df):
-            """
-            Prediction certainties from the classifier on a single value.
-            """
-            return np.array([i[1] for i in rf_clf.predict_proba(data_df)])
+        # Fewer samples used to prevent longer run time of test.
+        ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_,
+                             n_samples=10000)
 
-        # # Fewer samples used to prevent longer run time of test.
-        # ldr.density_estimate(func, n_samples=1000)
+        features = ["mean radius", "area error", "worst concavity"]
 
-        # print(ldr.samples_bin.head())
-        # print(rf_clf.predict_proba(data_df))
+        # path = os.path.join(os.path.dirname(__file__), "output",
+        #                     "breast_cancer_1d.png")
+        # ldr.vis_1d_certainty(title="Breast Cancer Classifier Certainty",
+        #                      save=path)
+
+        path = os.path.join(os.path.dirname(__file__), "output",
+                            "breast_cancer_2d.png")
+        ldr.vis_2d_certainty(title="Breast Cancer Classifier Certainty Matrix",
+                             save=path,
+                             features=features)
 
     @pytest.fixture(scope="module")
     def wine_data(self):
@@ -107,15 +112,12 @@ class TestEntry:
 
         # Fewer samples than default used to prevent longer run time of test.
         ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_,
-                             n_samples=1000)
+                             n_samples=10000)
 
         # path = os.path.join(os.path.dirname(__file__), "output", "wine_1d.png")
         # ldr.vis_1d_certainty(title="Wine Classifier Certainty",
-        #                      save=path,
-        #                      show=False)
+        #                      save=path)
 
         path = os.path.join(os.path.dirname(__file__), "output", "wine_2d.png")
         ldr.vis_2d_certainty(title="Wine Classifier Certainty Matrix",
-                             save=path,
-                             show=True)
-
+                             save=path)

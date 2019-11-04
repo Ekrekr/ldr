@@ -8,6 +8,7 @@ import copy
 import typing
 import sklearn
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import pandas as pd
 import numpy as np
 from sklearn.neighbors import KernelDensity
@@ -84,7 +85,7 @@ class LDR:
         self.n_bins = None
         self.samples = None
         self.sample_predictions = None
-        self.classes = None
+        self.classifications = None
         self.class_bins = None
         self.feature_bins = None
         self.intervals = None
@@ -133,11 +134,9 @@ class LDR:
             The type of problem.
         """
         if utils.is_np_numerical(self.targets):
-            if self.verbose:
-                self._print("Targets indicate a regression problem.")
+            self._print("Targets indicate a regression problem.")
             return ProblemType.regression
-        if self.verbose:
-            self._print("Targets indicate a classification problem.")
+        self._print("Targets indicate a classification problem.")
         return ProblemType.classification
 
     def _check_class_order(self):
@@ -217,7 +216,7 @@ class LDR:
 
     def density_estimate(self,
                          func: any,
-                         classes: list,
+                         classifications: list,
                          n_samples: int = 50000,
                          k_dens: float = 0.02,
                          n_bins: int = 51):
@@ -246,7 +245,7 @@ class LDR:
             n_bins: The resolution of the binning, post sampling.
         """
         self.func = func
-        self.classes = classes
+        self.classifications = classifications
         self.n_samples = n_samples
         self.k_dens = k_dens
         self.n_bins = n_bins
@@ -260,7 +259,7 @@ class LDR:
         self.sample_predictions = self.func(self.samples)
 
         self.class_bins = {}
-        for i_class, v_class in enumerate(classes):
+        for i_class, v_class in enumerate(classifications):
             class_preds = np.array(
                 [i[i_class] for i in self.sample_predictions])
             self.class_bins[v_class] = self._bin_values(class_preds)
@@ -362,6 +361,64 @@ class LDR:
             ret += ("\n" + txt[36:54])
         return ret
 
+    def _draw_1d_subplot(self,
+                         axes: plt.subplot,
+                         col: int,
+                         row: int,
+                         feature: str,
+                         classes: list,
+                         invert: bool = False):
+        """
+        Draws 1d graph for a specified feature.
+
+        Args:
+            axes: Axes to draw to.
+            col: Subplot column.
+            row: Subplot row.
+            feature: Subplot feature to draw.
+            classes: Labels to give as classes to plot.
+            invert: If true, draw vertically rather than horizontally.
+        """
+        min_val = self.min_max[feature]["min"]
+        max_val = self.min_max[feature]["max"]
+
+        # Select mid values of intervals for x values on plot.
+        inter_vals = [self._rescale(min_val, max_val, i.mid)
+                      for i in np.array(self.intervals)]
+
+        if not invert:
+            j = 0
+            for _, v_class in self.feature_bins[feature].iteritems():
+                axes[col, row].plot(inter_vals, v_class.values,
+                                    color=self.colors[j])
+                j += 1
+            axes[col, row].set_ylim(0.0, 1.0)
+            # Overshooting the arange causes 1.0 to be visible.
+            axes[col, row].set_yticks(np.arange(0.0, 1.25, 0.25))
+            axes[col, row].set_xlim(min_val, max_val)
+            axes[col, row].set_xticks(np.linspace(min_val, max_val, 5))
+            axes[col, row].grid(True)
+            axes[col, row].set_xlabel(self._break_text(feature))
+            axes[col, row].legend(labels=classes, title="Classes",
+                                  loc="upper right")
+        else:
+            # Draws graph vertically, which is what `invert` means here.
+            j = 0
+            for _, v_class in self.feature_bins[feature].iteritems():
+                axes[col, row].plot(v_class.values, inter_vals,
+                                    color=self.colors[j])
+                j += 1
+            axes[col, row].set_xlim(0.0, 1.0)
+            # Overshooting the arange causes 1.0 to be visible.
+            axes[col, row].set_xticks(np.arange(0.0, 1.25, 0.25))
+            axes[col, row].set_ylim(min_val, max_val)
+            axes[col, row].set_yticks(np.linspace(min_val, max_val, 5))
+            axes[col, row].grid(True)
+            axes[col, row].set_ylabel(self._break_text(feature))
+            axes[col, row].legend(labels=classes, title="Classes",
+                                  loc="upper right")
+            axes[col, row].invert_yaxis()
+
     def vis_1d_certainty(self,
                          title: str = None,
                          save: str = None,
@@ -384,7 +441,6 @@ class LDR:
         features = list(self.feature_bins.keys())
         n_features = len(features)
         classes = self.feature_bins[features[0]].columns
-        n_classes = len(classes)
         n_rows = int(np.sqrt(n_features))
         n_cols = int(np.ceil(n_features / n_rows))
 
@@ -393,27 +449,7 @@ class LDR:
 
         for i, feature in enumerate(features):
             row, col = int(i / n_rows), i % n_rows
-            min_val = self.min_max[feature]["min"]
-            max_val = self.min_max[feature]["max"]
-
-            # Select mid values of intervals for x values on plot.
-            x_vals = [self._rescale(min_val, max_val, i.mid)
-                      for i in np.array(self.intervals)]
-
-            j = 0
-            for _, v_class in self.feature_bins[feature].iteritems():
-                axes[col, row].plot(x_vals, v_class.values,
-                                    color=self.colors[j])
-                j += 1
-            axes[col, row].set_ylim(0.0, 1.0)
-            # Overshooting the arange causes 1.0 to be visible.
-            axes[col, row].set_yticks(np.arange(0.0, 1.25, 0.25))
-            axes[col, row].set_xlim(min_val, max_val)
-            axes[col, row].set_xticks(np.linspace(min_val, max_val, 5))
-            axes[col, row].grid(True)
-            axes[col, row].set_xlabel(self._break_text(feature))
-            axes[col, row].legend(labels=classes, title="Classes",
-                                  loc="upper right")
+            self._draw_1d_subplot(axes, col, row, feature, classes)
 
         # Hide axes which have nothing plotted.
         for i in range(n_features, n_rows * n_cols):
@@ -469,23 +505,68 @@ class LDR:
                 y_col]) * (self.n_bins - 1) - 0.5)
             z2d[col1_ind][col2_ind].append(self.sample_predictions[i_sample])
 
-        cols_t = self.colors.T
-
         # print("z2d[0]:", z2d[0])
 
         iters = range(self.n_bins - 1)
         z2d = np.array([[utils.reduce_colors(
-            z2d[i][j], cols_t) for i in iters] for j in iters])
+            z2d[i][j], self.colors) for i in iters] for j in iters])
 
         # print("z2d[0] after:", z2d[0])
 
         return z2d, min_x, max_x, min_y, max_y
 
+    def _draw_2d_subplot(self,
+                         axes: plt.subplot,
+                         col: int,
+                         row: int,
+                         x_feature: str,
+                         y_feature: str,
+                         classes: list):
+        """
+        Draws 2d subplot.
+        """
+        z2d, min_x, max_x, min_y, max_y = self._bin_2d_values(x_feature,
+                                                              y_feature)
+
+        axes[col, row].imshow(z2d)
+        axes[col, row].scatter(self.data_df[x_feature],
+                               self.data_df[y_feature], c="#000000",
+                               s=3, marker="o", alpha=0.2, zorder=1)
+        axes[col, row].set_xticks(np.linspace(min_x, max_x, 3))
+        axes[col, row].set_yticks(np.linspace(min_y, max_y, 3))
+        axes[col, row].yaxis.tick_right()
+        axes[col, row].yaxis.set_label_position("right")
+        axes[col, row].grid(False)
+
+    def _select_feature_subset(self,
+                               features: typing.List[str]):
+        """
+        Selects a feature subset if requested, otherwise returns all features.
+
+        Raises an exception if requested feature in subset not present in
+        features during class initialization.
+
+        Args:
+            features: Feature subset if not None, otherwise all features.
+        """
+        all_features = list(self.feature_bins.keys())
+
+        if not features:
+            return all_features
+
+        if any([f not in all_features for f in features]):
+            raise Exception(f"Feature subset requested, but subset contains a"
+                            f"feature not in original feature set.\n"
+                            f"All features: {all_features}\n"
+                            f"Requested features: {features}")
+
+        return features
+
     def vis_2d_certainty(self,
                          title: str = None,
                          save: str = None,
-                         show: bool = False,
-                         dots: bool = True):
+                         features: typing.List[str] = None,
+                         show: bool = False):
         """
         Visualizes individual effects, 2D cross effects of selected features.
 
@@ -511,10 +592,11 @@ class LDR:
         Args:
             title: Suptitle to show, if not None.
             save: Path to save file as, if not None.
+            features: If set, only draws features specified.
             show: Calls plt.show() if True.
-            dots: Whether to draw dots of VEGAS sampling.
         """
-        features = list(self.feature_bins.keys())
+        features = self._select_feature_subset(features)
+        classes = self.feature_bins[features[0]].columns
         n_features = len(features)
         fig, axes = plt.subplots(nrows=n_features, ncols=n_features, figsize=(
             n_features * 5.0, n_features * 4.0 + 2.0))
@@ -527,48 +609,21 @@ class LDR:
         left_row = [(0, i + 1) for i in range(n_features - 1)]
         top_row = [(i + 1, 0) for i in range(n_features - 1)]
 
-        # # Plot contours in top left triangle coordinates.
-        # for i_x, i_y in top_left_co:
-        #     x_col = features[i_x - 1]
-        #     y_col = features[n_features - i_y]
+        # Plot contours in top left triangle coordinates.
+        for col, row in top_left_co:
+            x_feature = features[col - 1]
+            y_feature = features[n_features - row]
+            self._draw_2d_subplot(axes, col, row, x_feature, y_feature,
+                                  classes)
 
-        #     z2d, min_x, max_x, min_y, max_y = self._bin_2d_values(x_col, y_col)
+        # Add bar charts as charts on top row.
+        for col, row in top_row:
+            feature = features[col - 1]
+            self._draw_1d_subplot(axes, col, row, feature, classes)
 
-        #     axes[i_x, i_y].imshow(z2d)
-        #     if dots:
-        #         axes[i_x, i_y].scatter(self.data_df[x_col],
-        #                                self.data_df[y_col], c="#000000",
-        #                                s=3, marker="o", alpha=0.2, zorder=1)
-        #     axes[i_x, i_y].set_xticks(np.linspace(min_x, max_x, 3))
-        #     axes[i_x, i_y].set_yticks(np.linspace(min_y, max_y, 3))
-        #     axes[i_x, i_y].yaxis.tick_right()
-        #     axes[i_x, i_y].yaxis.set_label_position("right")
-        #     axes[i_x, i_y].grid(False)
-
-    #     # Add bar charts as charts on top row.
-    #     for x, y in top_row:
-    #         print(x, y)
-    #         col = cols[x - 1]
-    #         print(col)
-    #         min_val = self.min_max[col]["min"]
-    #         max_val = self.min_max[col]["max"]
-
-    #         # Select mid values of intervals for x values.
-    #         bar_vals = self.D_bins[col] - 0.5
-    #         x_vals = [self._rescale(min_val, max_val, i.mid)
-    #                   for i in np.array(bar_vals.keys())]
-    #         y_vals = bar_vals.values
-    #         c = [colors(i+0.5) for i in y_vals]
-
-    #         axes[x, y].bar(x=x_vals, height=y_vals, color=c,
-    #                        width=(max_val - min_val) / len(x_vals) * 1.05)
-    #         axes[x, y].set_ylim(-0.5, 0.5)
-    #         axes[x, y].set_yticks(np.arange(-0.5, 0.75, 0.25))
-    #         axes[x, y].set_xlim(min_val, max_val)
-    #         axes[x, y].set_xticks(np.linspace(min_val, max_val, 3))
-    #         axes[x, y].grid(False)
-    #         # axes[i, y].yaxis.set_label_position("right")
-    #         axes[x, y].set_xlabel(self._break_text(col), fontsize=18)
+        for col, row in left_row:
+            feature = features[n_features - row]
+            self._draw_1d_subplot(axes, col, row, feature, classes, invert=True)
 
     #     # Add bar charts on left row.
     #     for x, y in left_row:

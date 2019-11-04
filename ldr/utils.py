@@ -59,39 +59,50 @@ def find_nearest(array: np.array,
 
 # Take mean of of each prediction, and weight it to the color of the
 # class.
-def reduce_colors(arr: np.array,
+def reduce_colors(weights: np.array,
                   colors: np.array):
     """
+    Reduces class colors and respective weights to a single color.
 
-    arr must be of the shape (x, y, ):
-    [
-        [
-            [
-                [w_0_0_0, w_0_0_1],
-                [],
-                [w_2_0_0]
-            ],
-            [
-                [w_0_1_0, w_1_1_1]
-            ]
-        ],
-        [
-            ...
-        ]
-    ]
-    Where w represents a weight, which a prediction from a single sample. The
-    mean value of the weights gives the total weighting to give to a color.
+    Let `n` be the number of features in the problem.
+
+    * weights must be a collection of certainties...
+
+    * colors must be of the form:
+
+    ```python3
+    np.array([
+        np.array([c_0_R, c_0_G, c_0_B]),
+        np.array([c_1_R, c_1_G, c_1_B]),
+        ...,
+        np.array([c_n_R, c_n_G, c_n_B])
+    ])
+    ```
+
+    * What is returned is a color of the form:
+
+    ```python3
+    np.array([c_R, c_G, c_B])
+    ```
 
     Args:
-        arr: Array to transform then reduce to colors.
+        weights: Array of weights of certainty of each feature.
+        colors: Colors for weightings to apply to.
+    Returns:
+        Average color when reduced.
     """
-    weights = np.mean(np.array(arr), axis=0) if len(arr) > 0 else np.array([0.0, 0.0, 0.0])
-    w_cols = colors * weights
-    # print("arr:", arr)
-    # print("colors:", colors)
-    # print("weights:", weights)
-    # print("w_cols:", w_cols)
-    # print("w_cols2:", w_cols)
-    # raise Exception()
-    w_cols = [sum(i) for i in w_cols]
-    return w_cols
+    try:
+        reduced_weights = np.mean(np.array(weights), axis=0) if len(
+            weights) > 0 else np.array([1.0 for i in range(len(colors))])
+        weighted_colors = [colors[
+            i] * reduced_weights[i] for i, _ in enumerate(reduced_weights)]
+        final_color = np.sum(np.array(weighted_colors), axis=0) if len(
+            weights) > 0 else np.array([1.0, 1.0, 1.0])
+        return final_color
+    except:
+        print("colors:", colors)
+        print("weights:", weights)
+        print("reduced_weights:", reduced_weights)
+        print("weighted_colors:", weighted_colors)
+        print("final_color:", final_color)
+        exit(0)

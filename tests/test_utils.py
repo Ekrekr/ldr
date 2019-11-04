@@ -50,26 +50,71 @@ class TestUtils:
         assert utils.find_nearest(test_arr, 2.51) == 3.0
         assert utils.find_nearest(test_arr, 2.5) == 2.0
 
-    def test_reduce_colors(self):
+    def test_reduce_2_colors(self):
         """
         Tests elementwise weighting of colors.
         """
-        colors = np.array([np.array([0.9, 0.3, 0.1]),
-                           np.array([0.4, 0.8, 0.3]),
-                           np.array([0.2, 0.3, 0.9]),
-                           np.array([0.7, 0.1, 0.2])])
+        colors = np.array([
+            np.array([1.0, 0.0, 0.0]),
+            np.array([0.0, 1.0, 0.0])
+        ])
 
-        arr = 
+        weights = [np.array([1.0, 0.0])]
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 1.0
+        assert w_cols[1] == 0.0
+        assert w_cols[2] == 0.0
 
-        arr = np.array([[[np.array([0, 1, 0]), np.array([0, 0, 1])],
-                         [np.array([1, 0, 0])]],
-                        [[[],
-                         np.array([0, 0, 1])]],
-                        [[[], []]],
-                        [[[], []]]])
+        weights = [np.array([0.5, 0.5]), np.array([0.5, 0.5])]
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 0.5
+        assert w_cols[1] == 0.5
+        assert w_cols[2] == 0.0
 
-        print("Shape:", arr.shape)
+        weights = []
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 1.0
+        assert w_cols[1] == 1.0
+        assert w_cols[2] == 1.0
 
-        w_cols = utils.reduce_colors(arr, colors)
+    def test_reduce_5_colors(self):
+        """
+        Tests elementwise weighting of colors.
+        """
+        colors = np.array([
+            np.array([1.0, 0.0, 0.0]),
+            np.array([0.0, 1.0, 0.0]),
+            np.array([0.0, 0.0, 1.0]),
+            np.array([0.0, 0.0, 0.0]),
+            np.array([1.0, 1.0, 1.0])
+        ])
 
-        print("arr:", w_cols)
+        weights = [np.array([1.0, 0.0, 0.0, 0.0, 0.0])]
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 1.0
+        assert w_cols[1] == 0.0
+        assert w_cols[2] == 0.0
+
+        weights = [np.array([0.5, 0.5, 0.0, 0.0, 0.0])]
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 0.5
+        assert w_cols[1] == 0.5
+        assert w_cols[2] == 0.0
+
+        weights = [np.array([0.25, 0.25, 0.0, 0.25, 0.25])]
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 0.5
+        assert w_cols[1] == 0.5
+        assert w_cols[2] == 0.25
+
+        weights = [np.array([0.25, 0.25, 0.0, 0.25, 0.25])]
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 0.5
+        assert w_cols[1] == 0.5
+        assert w_cols[2] == 0.25
+
+        weights = []
+        w_cols = utils.reduce_colors(weights, colors)
+        assert w_cols[0] == 1.0
+        assert w_cols[1] == 1.0
+        assert w_cols[2] == 1.0
