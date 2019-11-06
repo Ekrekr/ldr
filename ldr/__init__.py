@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 from sklearn.neighbors import KernelDensity
 from sklearn.preprocessing import MinMaxScaler
+from decimal import Decimal
 
 from . import utils
 
@@ -466,6 +467,19 @@ class LDR:
         if show:
             plt.show()
 
+    def _make_scientific(self,
+                         arr: np.array):
+        """
+        Turns numpy array numbers into scientific format.
+
+        Args:
+            arr: Array to convert.
+
+        Returns:
+            Array of strings in scientific number format.
+        """
+        return ["%.2E" % Decimal(i) for i in arr]
+
     def _bin_2d_values(self,
                        x_col: str,
                        y_col: str):
@@ -486,15 +500,8 @@ class LDR:
         mid_points = np.array([i.mid for i in self.intervals])
 
         min_max = self.min_max
-        min_x, max_x = min_max[x_col]["min"], min_max[x_col]["min"]
-        min_y, max_y = min_max[y_col]["min"], min_max[y_col]["min"]
-
-        # Unscale limits from mesh grid for describing 2D space.
-        # x2d, y2d = np.meshgrid(
-        #     np.linspace(min_x, max_x, self.n_bins - 1),
-        #     np.linspace(min_y, max_y, self.n_bins - 1))
-
-        # z2d = [[[i*j, i*j, i*j] for i in res_sub] for j in res_sub]
+        min_x, max_x = min_max[x_col]["min"], min_max[x_col]["max"]
+        min_y, max_y = min_max[y_col]["min"], min_max[y_col]["max"]
 
         # Go through each prediction and put into nearest bin for Z values.
         z2d = [[[] for i in res_sub] for j in res_sub]
@@ -504,8 +511,6 @@ class LDR:
             col2_ind = int(utils.find_nearest(mid_points, sample[
                 y_col]) * (self.n_bins - 1) - 0.5)
             z2d[col1_ind][col2_ind].append(self.sample_predictions[i_sample])
-
-        # print("z2d[0]:", z2d[0])
 
         iters = range(self.n_bins - 1)
         z2d = np.array([[utils.reduce_colors(
@@ -528,15 +533,29 @@ class LDR:
         z2d, min_x, max_x, min_y, max_y = self._bin_2d_values(x_feature,
                                                               y_feature)
 
-        axes[col, row].imshow(z2d)
-        axes[col, row].scatter(self.data_df[x_feature],
-                               self.data_df[y_feature], c="#000000",
+        axes[col, row].imshow(z2d, extent=(0.0, 1.0, 1.0, 0.0))
+        axes[col, row].scatter(self.scaled[x_feature],
+                               self.scaled[y_feature], c="#000000",
                                s=3, marker="o", alpha=0.2, zorder=1)
-        axes[col, row].set_xticks(np.linspace(min_x, max_x, 3))
-        axes[col, row].set_yticks(np.linspace(min_y, max_y, 3))
+        axes[col, row].set_xlim(0.0, 1.0)
+        axes[col, row].set_xticklabels(
+            self._make_scientific(np.linspace(min_x, max_x, 5)))
+        axes[col, row].set_ylim(0.0, 1.0)
+        axes[col, row].set_yticklabels(
+            self._make_scientific(np.linspace(min_y, max_y, 5)))
         axes[col, row].yaxis.tick_right()
         axes[col, row].yaxis.set_label_position("right")
         axes[col, row].grid(False)
+
+
+    #         axes[x, y].set_xlim(-0.5, 0.5)
+    #         axes[x, y].set_xticks(np.arange(-0.5, 0.75, 0.25))
+    #         axes[x, y].set_ylim(min_val, max_val)
+    #         axes[x, y].set_yticks(np.linspace(min_val, max_val, 3))
+    #         axes[x, y].yaxis.tick_right()
+    #         axes[x, y].yaxis.set_label_position("right")
+    #         axes[x, y].grid(False)
+    #         axes[x, y].set_ylabel(self._break_text(col), fontsize=18)
 
     def _select_feature_subset(self,
                                features: typing.List[str]):
