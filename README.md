@@ -1,37 +1,57 @@
-# PyLDR
+<!-- <p align="center">
+  <a href="" rel="noopener">
+ <img width=200px height=200px src="https://i.imgur.com/6wj0hh6.jpg" alt="Project logo"></a>
+</p> -->
 
-Pyldr stands for (Python) Latent Dimensionality Reduction, and is a method for interpreting black box models. It is deployed here as a python module.
+<h1 align="center">LDR</h1>
 
-Black box models often provide better results than more interpretable methods, and brings some [quite strong opions](https://arxiv.org/abs/1811.10154). This method aims to bridge that gap by providing a generic, reliable algorithmic method for interpreting any model. I define interpretability as:
+<div align="center">
 
-1. Understanding how a model understands the data, and whether it is similar to how a human would think of it.
+[![Status](https://img.shields.io/badge/status-active-success.svg)]()
+[![GitHub Issues](https://img.shields.io/github/issues/ekrekr/ldr.svg)](https://github.com/ekrekr/ldr/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/ekrekr/ldr.svg)](https://github.com/ekrekr/ldr/pulls)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-2. Interpreting how the value of a feature, or subset of features, affects a model's prediction (feature interpretation).
+</div>
+
+---
+
+LDR stands for **Latent Dimensionality Reduction**. It is a generic method for interpreting models. It is deployed here as a python module.
+
+## About
+
+The purpose of LDR is to solve a common and [controversial](https://arxiv.org/abs/1811.10154) problem. Often models that have a higher predictive accuracy are more complex. These complex models are sensibly referred to as **black box models**. This is frustrating for many data scientists, as they end up with a model that performs well, but they **can't explain why**, which can cause the model to fail in critical situations which are difficult to test for.
+
+LDR aims to bridge that gap by providing a generic, reliable algorithmic method for interpreting most models. I define interpretability as:
+
+1. Understanding the quality of a systems current understanding. Is the model overfitting, is there insufficient training data, and thus will it fail when deployed to the real world?
+
+2. Interpreting how the value of a feature, or subset of features, affects a model's prediction (which I refer to here as **feature interpretation**).
 
 3. The ability to use a model when not all values for the input features are present.
 
-## Running the Code
+## Getting Started
 
 ### Prerequesites
 
 [Python3](https://www.python.org/download/releases/3.0/).
 
-### Execution
+### Installation
 
-All examples are contained in notebooks, while the LDR module is [ldr.py](ldr.py). The required packages are listed in [requirements.txt](requirements.txt), and their respective distributions and licenses can be found on the [Python Package Index](https://pypi.org/). To run the code use:
+```console
+python3 -m pip install ldr --user
+```
 
-1. `python3 -m pip install --requirement requirements.txt`.
+### Usage
 
-2. `jupyter notebook`.
+An example analysis of a simple generated distribution can be found [here](distribution_example.ipynb).
 
-- The generated distribution example can be found [here](distribution_example.ipynb).
+An example analysis of a classification problem can be found [here](classification_example.ipynb).
 
-- The classification example can be found [here](classification_example.ipynb).
+An example analysis of a regression problem can be found [here](regression_example.ipynb).
 
-- The regression example can be found [here](regression_example.ipynb).
-
-- The step by step interpolation example can be found [here](interpolation_example.ipynb).
+A step by step multi-model interpolation example can be found, where outlier detection is enforced to improve the efficacy for critical systems [here](interpolation_example.ipynb).
 
 ## Additional Notes
 
-The [style sheet used](style.mplstyle) is from [one of my personal repos](https://github.com/Ekrekr/ekrekr.style).
+If you find this package useful, please consider [contributing](contributing.md)!

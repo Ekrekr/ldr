@@ -12,10 +12,10 @@ with open(path.join(LOCAL_PATH, 'README.md')) as f:
     LONG_DESCRIPTION = f.read()
 
 setup(
-    name='sampleproject',
-    version='0.0.1',
+    name='ldr',
+    version='0.2',
     description='Latent Dimensionality Reduction in Python',
-    long_description=LONG_DESCRIPTION,
+    long_description=f"{LONG_DESCRIPTION}",
     long_description_content_type='text/markdown',
     url='https://github.com/ekrekr/pyldr',
     author='Elias Kassell',
@@ -23,19 +23,18 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'Topic :: Machine Learning :: Model Visualization',
-        'License :: GNU GPLv3 License',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        'Topic :: Scientific/Engineering :: Visualization',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3',
     ],
 
     # TODO: Add keywords
     keywords='sample setuptools development',
 
-    package_dir={'': 'ldr'},
-    packages=find_packages(where='ldr'),
-    python_requires='>3.5, <4',
+    package_dir={'': 'src'},
+    packages=find_packages(),
+    python_requires='>3.5',
 
     # TODO: Check install requires
     install_requires=[''],
@@ -54,6 +53,8 @@ setup(
             'sample=sample:main',
         ],
     },
+
+    data_files=[("", ["README.md", "contributing.md"])],
 
     project_urls={
     },
