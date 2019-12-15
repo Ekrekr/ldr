@@ -1,20 +1,9 @@
-<!-- <p align="center">
-  <a href="" rel="noopener">
- <img width=200px height=200px src="https://i.imgur.com/6wj0hh6.jpg" alt="Project logo"></a>
-</p> -->
+# LDR
 
-<h1 align="center">LDR</h1>
-
-<div align="center">
-
-[![Status](https://img.shields.io/badge/status-active-success.svg)]()
+[![Status](https://img.shields.io/badge/status-active-success.svg)](eliaskassell.com)
 [![GitHub Issues](https://img.shields.io/github/issues/ekrekr/ldr.svg)](https://github.com/ekrekr/ldr/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/ekrekr/ldr.svg)](https://github.com/ekrekr/ldr/pulls)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
-</div>
-
----
 
 LDR stands for **Latent Dimensionality Reduction**. It is a generic method for interpreting models. It is deployed here as a python module.
 
@@ -44,13 +33,13 @@ python3 -m pip install ldr --user
 
 ### Usage
 
-An example analysis of a simple generated distribution can be found [here](distribution_example.ipynb).
+An example analysis of a simple generated distribution can be found [here](examples/distribution_example.ipynb).
 
-An example analysis of a classification problem can be found [here](classification_example.ipynb).
+An example analysis of a classification problem can be found [here](examples/classification_example.ipynb).
 
-An example analysis of a regression problem can be found [here](regression_example.ipynb).
+An example analysis of a regression problem can be found [here](examples/regression_example.ipynb).
 
-A step by step multi-model interpolation example can be found, where outlier detection is enforced to improve the efficacy for critical systems [here](interpolation_example.ipynb).
+A step by step multi-model interpolation example can be found, where outlier detection is enforced to improve the efficacy for critical systems [here](examples/interpolation_example.ipynb).
 
 ## Additional Notes
 

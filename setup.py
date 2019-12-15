@@ -13,7 +13,7 @@ with open(path.join(LOCAL_PATH, 'README.md')) as f:
 
 setup(
     name='ldr',
-    version='0.2',
+    version='0.3',
     description='Latent Dimensionality Reduction in Python',
     long_description=f"{LONG_DESCRIPTION}",
     long_description_content_type='text/markdown',
@@ -28,34 +28,15 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
     ],
-
-    # TODO: Add keywords
-    keywords='sample setuptools development',
-
-    package_dir={'': 'src'},
+    keywords='visualization',  # TODO: Add more keywords
     packages=find_packages(),
     python_requires='>3.5',
-
-    # TODO: Check install requires
-    install_requires=[''],
-
+    install_requires=[''],  # TODO: Check install requires works as expected.
     extras_require={
         'dev': [''],
         'test': ['pytest'],
     },
-    package_data={
-        'sample': ['package_data.dat'],
-    },
-
-    # TODO: Confirm entry points
-    entry_points={
-        'console_scripts': [
-            'sample=sample:main',
-        ],
-    },
-
-    data_files=[("", ["README.md", "contributing.md"])],
-
+    # data_files=[("", ["README.md", "contributing.md"])],
     project_urls={
     },
 )
