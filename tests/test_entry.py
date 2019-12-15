@@ -63,10 +63,10 @@ class TestEntry:
 
         features = ["mean radius", "area error", "worst concavity"]
 
-        # path = os.path.join(os.path.dirname(__file__), "output",
-        #                     "breast_cancer_1d.png")
-        # ldr.vis_1d_certainty(title="Breast Cancer Classifier Certainty",
-        #                      save=path)
+        path = os.path.join(os.path.dirname(__file__), "output",
+                            "breast_cancer_1d.png")
+        ldr.vis_1d_certainty(title="Breast Cancer Classifier Certainty",
+                             save=path)
 
         path = os.path.join(os.path.dirname(__file__), "output",
                             "breast_cancer_2d.png")
@@ -114,9 +114,9 @@ class TestEntry:
         ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_,
                              n_samples=10000)
 
-        # path = os.path.join(os.path.dirname(__file__), "output", "wine_1d.png")
-        # ldr.vis_1d_certainty(title="Wine Classifier Certainty",
-        #                      save=path)
+        path = os.path.join(os.path.dirname(__file__), "output", "wine_1d.png")
+        ldr.vis_1d_certainty(title="Wine Classifier Certainty",
+                             save=path)
 
         path = os.path.join(os.path.dirname(__file__), "output", "wine_2d.png")
         ldr.vis_2d_certainty(title="Wine Classifier Certainty Matrix",

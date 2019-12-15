@@ -98,11 +98,11 @@ def reduce_colors(weights: np.array,
             i] * reduced_weights[i] for i, _ in enumerate(reduced_weights)]
         final_color = np.sum(np.array(weighted_colors), axis=0) if len(
             weights) > 0 else np.array([1.0, 1.0, 1.0])
-        return final_color
-    except:
+    except Exception:
         print("colors:", colors)
         print("weights:", weights)
         print("reduced_weights:", reduced_weights)
         print("weighted_colors:", weighted_colors)
         print("final_color:", final_color)
         exit(0)
+    return final_color

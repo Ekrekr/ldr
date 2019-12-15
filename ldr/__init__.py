@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """LDR - init
 
-Classifier Certainty Visualization.
+Generic Model Visualization.
 """
 import os
 import copy
@@ -40,6 +40,7 @@ class LDR:
     """
     Latent Dimensonality Reduction.
     """
+
     def __init__(self,
                  data_df: pd.DataFrame,
                  targets: pd.Series,
@@ -547,16 +548,6 @@ class LDR:
         axes[col, row].yaxis.set_label_position("right")
         axes[col, row].grid(False)
 
-
-    #         axes[x, y].set_xlim(-0.5, 0.5)
-    #         axes[x, y].set_xticks(np.arange(-0.5, 0.75, 0.25))
-    #         axes[x, y].set_ylim(min_val, max_val)
-    #         axes[x, y].set_yticks(np.linspace(min_val, max_val, 3))
-    #         axes[x, y].yaxis.tick_right()
-    #         axes[x, y].yaxis.set_label_position("right")
-    #         axes[x, y].grid(False)
-    #         axes[x, y].set_ylabel(self._break_text(col), fontsize=18)
-
     def _select_feature_subset(self,
                                features: typing.List[str]):
         """
@@ -642,7 +633,8 @@ class LDR:
 
         for col, row in left_row:
             feature = features[n_features - row]
-            self._draw_1d_subplot(axes, col, row, feature, classes, invert=True)
+            self._draw_1d_subplot(axes, col, row, feature,
+                                  classes, invert=True)
 
     #     # Add bar charts on left row.
     #     for x, y in left_row:

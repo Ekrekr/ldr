@@ -14,9 +14,7 @@ Black box models often provide better results than more interpretable methods, a
 
 ### Prerequesites
 
-1. [Python3](https://www.python.org/download/releases/3.0/).
-
-2. [Jupyter Notebook](https://jupyter.org/).
+[Python3](https://www.python.org/download/releases/3.0/).
 
 ### Execution
 
@@ -26,13 +24,13 @@ All examples are contained in notebooks, while the LDR module is [ldr.py](ldr.py
 
 2. `jupyter notebook`.
 
-* The generated distribution example can be found [here](distribution_example.ipynb).
+- The generated distribution example can be found [here](distribution_example.ipynb).
 
-* The classification example can be found [here](classification_example.ipynb).
+- The classification example can be found [here](classification_example.ipynb).
 
-* The regression example can be found [here](regression_example.ipynb).
+- The regression example can be found [here](regression_example.ipynb).
 
-* The step by step interpolation example can be found [here](interpolation_example.ipynb).
+- The step by step interpolation example can be found [here](interpolation_example.ipynb).
 
 ## Additional Notes
 
