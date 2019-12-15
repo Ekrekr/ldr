@@ -1,6 +1,6 @@
-# LDR
+# PyLDR
 
-LDR stands for Latent Dimensionality Reduction, and is a method for interpreting black box models. It is deployed here as a python module.
+Pyldr stands for (Python) Latent Dimensionality Reduction, and is a method for interpreting black box models. It is deployed here as a python module.
 
 Black box models often provide better results than more interpretable methods, and brings some [quite strong opions](https://arxiv.org/abs/1811.10154). This method aims to bridge that gap by providing a generic, reliable algorithmic method for interpreting any model. I define interpretability as:
 
