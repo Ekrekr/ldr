@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""LDR - init
+"""
+LDR - init
 
 Generic Model Visualization.
 """

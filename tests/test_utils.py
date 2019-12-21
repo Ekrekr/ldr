@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-LDR test_utils
-
-Tests `ldr.utils`.
-"""
 import numpy as np
 from ldr import utils
 
@@ -12,6 +7,7 @@ class TestUtils:
     """
     Tests the utils module.
     """
+
     def test_np_numerical(self):
         """
         Tests `utils.is_np_numerical` function.
@@ -33,7 +29,7 @@ class TestUtils:
         assert len(few_cols) == 4
 
         many_cols = utils.gen_colors(50)
-        assert len(many_cols) == 50 
+        assert len(many_cols) == 50
 
         assert max([max(i) for i in many_cols]) < 1.0
         assert min([min(i) for i in many_cols]) > 0.0
