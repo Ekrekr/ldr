@@ -1,6 +1,7 @@
 """
 LDR - Classification Example
 """
+import os
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
@@ -23,11 +24,13 @@ class Classification:
     LDR for classification example.
     """
 
-    def __init__(self):
+    def __init__(self, output_path=""):
         self.load_data()
         self.preprocess()
         self.train_rf_classifier()
         self.train_if_classifier()
+        self.density_estimate()
+        self.plot_visuals(output_path)
 
     def load_data(self):
         """
@@ -46,8 +49,9 @@ class Classification:
         """
         self.ldr = LDR(self.df, self.targets)
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.ldr.scaled, self.ldr.targets, test_size=0.3, random_state=42)
+        (self.X_train, self.X_test, self.y_train,
+            self.y_test) = train_test_split(self.ldr.scaled, self.ldr.targets,
+                                            test_size=0.3, random_state=42)
 
     def train_rf_classifier(self):
         """
@@ -67,7 +71,8 @@ class Classification:
         Trains an isolation forest for outlier detection.
         """
         self.if_clf = IsolationForest(
-            n_estimators=100, behaviour="new", contamination="auto").fit(self.X_train)
+            n_estimators=100, behaviour="new", contamination="auto").fit(
+                self.X_train)
 
     def if_clf_func(self, df):
         """
@@ -81,7 +86,33 @@ class Classification:
         """
         oc_pred = self.if_clf_func(df)
         rf_pred = self.rf_clf_func(df)
-        return [(rf_pred[i] - 0.5) * i_val + 0.5 for i, i_val in enumerate(oc_pred)]
+        return [(rf_pred[i] - 0.5) * i_val + 0.5 for i, i_val in enumerate(
+            oc_pred)]
+
+    def density_estimate(self):
+        """
+        Create a multidimensional interpretation of classifier certainty.
+
+        This is the magic bit.
+        """
+        self.ldr.density_estimate(
+            self.rf_clf.predict_proba, self.rf_clf.classes_, n_samples=10000)
+
+    def plot_visuals(self, output_path):
+        """
+        Plot and save visual outputs available.
+        """
+        selected_features = ["mean area",
+                             "mean symmetry", "smoothness error"]
+        self.ldr.vis_1d(
+            title="Classification Example 1 Dimensional Visualization",
+            save=os.path.join(
+                output_path, "classification_example_vis_1d.png"))
+        self.ldr.vis_2d(
+            title="Classification Example 2 Dimensional Visualization",
+            save=os.path.join(
+                output_path, "classification_example_vis_2d.png"),
+            features=selected_features)
 
 
 if __name__ == "__main__":

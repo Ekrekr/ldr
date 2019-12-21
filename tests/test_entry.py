@@ -65,14 +65,14 @@ class TestEntry:
 
         path = os.path.join(os.path.dirname(__file__), "output",
                             "breast_cancer_1d.png")
-        ldr.vis_1d_certainty(title="Breast Cancer Classifier Certainty",
-                             save=path)
+        ldr.vis_1d(title="Breast Cancer Classifier Certainty",
+                   save=path)
 
         path = os.path.join(os.path.dirname(__file__), "output",
                             "breast_cancer_2d.png")
-        ldr.vis_2d_certainty(title="Breast Cancer Classifier Certainty Matrix",
-                             save=path,
-                             features=features)
+        ldr.vis_2d(title="Breast Cancer Classifier Certainty Matrix",
+                   save=path,
+                   features=features)
 
     @pytest.fixture(scope="module")
     def wine_data(self):
@@ -115,9 +115,9 @@ class TestEntry:
                              n_samples=10000)
 
         path = os.path.join(os.path.dirname(__file__), "output", "wine_1d.png")
-        ldr.vis_1d_certainty(title="Wine Classifier Certainty",
-                             save=path)
+        ldr.vis_1d(title="Wine Classifier Certainty",
+                   save=path)
 
         path = os.path.join(os.path.dirname(__file__), "output", "wine_2d.png")
-        ldr.vis_2d_certainty(title="Wine Classifier Certainty Matrix",
-                             save=path)
+        ldr.vis_2d(title="Wine Classifier Certainty Matrix",
+                   save=path)

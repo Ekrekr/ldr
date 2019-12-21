@@ -163,7 +163,7 @@ class LDR:
         if set(self.data_df.columns) != set(columns):
             removed_cols = [
                 i for i in columns if i not in self.data_df.columns]
-            print(f"Data not numerical. Removed: {removed_cols}.")
+            self._print(f"Data not numerical. Removed: {removed_cols}.")
 
     # def _weight_samples(self):
     #     """
@@ -422,10 +422,10 @@ class LDR:
                                   loc="upper right")
             axes[col, row].invert_yaxis()
 
-    def vis_1d_certainty(self,
-                         title: str = None,
-                         save: str = None,
-                         show: bool = False):
+    def vis_1d(self,
+               title: str = None,
+               save: str = None,
+               show: bool = False):
         """
         Plots 1D certainty plots for different features.
 
@@ -573,11 +573,11 @@ class LDR:
 
         return features
 
-    def vis_2d_certainty(self,
-                         title: str = None,
-                         save: str = None,
-                         features: typing.List[str] = None,
-                         show: bool = False):
+    def vis_2d(self,
+               title: str = None,
+               save: str = None,
+               features: typing.List[str] = None,
+               show: bool = False):
         """
         Visualizes individual effects, 2D cross effects of selected features.
 
