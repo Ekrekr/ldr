@@ -1,4 +1,4 @@
-<img src="docs/images/header.png" style="box-shadow: 0 0 0.2rem 0.2rem #969696; width: 80%; display: block; margin-left: auto; margin-right: auto;"/>
+![Latent Dimensionality Reduction Header](https://raw.githubusercontent.com/Ekrekr/ldr/master/docs/images/header.png)
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)](eliaskassell.com)
 [![GitHub Issues](https://img.shields.io/github/issues/ekrekr/ldr.svg)](https://github.com/ekrekr/ldr/issues)
@@ -29,7 +29,7 @@ python3 -m pip install ldr --user
 
 <!-- An example analysis of a simple generated distribution can be found [here](examples/distribution_example.ipynb). -->
 
-An example analysis of a classification problem can be found [here](examples/classification.py).
+An example analysis of a classification problem can be found [here](https://raw.githubusercontent.com/Ekrekr/ldr/master/examples/classification.py).
 
 <!-- An example analysis of a classification problem, using a neural network, can be found [here](examples/classification_example.ipynb). -->
 
@@ -41,7 +41,7 @@ The examples above generate either 1D or 2D visualizations. These demonstrate th
 
 #### 1 Dimensional Visualization
 
-<img src="tests/output/breast_cancer_1d.png" style="box-shadow: 0 0 0.2rem 0.2rem #969696; width: 70%; display: block; margin-left: auto; margin-right: auto;"/>
+![1D visualization example](https://raw.githubusercontent.com/Ekrekr/ldr/master/tests/output/breast_cancer_1d.png)
 
 Here what can be seen is that if a cancer has a **mean area of less than 250** then the model is most likely to **classify it as benign**, whereas if it has a **mean area of more than 1200** then it is almost certainly going to be **classified as malignant**.
 
@@ -49,17 +49,17 @@ With the area error, what can be seen is that **between 280 and 480**, there is 
 
 #### 2 Dimensional Visualization
 
-<img src="tests/output/breast_cancer_2d.png" style="box-shadow: 0 0 0.2rem 0.2rem #969696; width: 70%; display: block; margin-left: auto; margin-right: auto;"/>
+![2D visualization example](https://raw.githubusercontent.com/Ekrekr/ldr/master/tests/output/breast_cancer_2d.png)
 
 Interpolating two classification certainties of individual features results in the heatmap in the bottom right. What can be seen is that the majority of samples have a low mean area and a low area error. When samples **deviate away from the bottom left**, with increasing mean area and area errors, the **probability of a malignancy classification dramatically increases**.
 
 #### n Dimensional Visualizations
 
-Even though only 1 and 2 dimensional visualizations are given, the entire classifier certainty across the sample space has been mapped. In this study there are actualy **30 features**, but by using LDR the individual components can be easily extracted. In order for a human to interpret a model, they must be able to see it. As [Donald Knuth says](https://en.wikiquote.org/wiki/Talk:Donald_Knuth):
+Even though only 1 and 2 dimensional visualizations are given, the entire classifier certainty across the sample space has been mapped. In this study there are actualy **30 features**, but by using LDR the individual components can be easily extracted. In order for a human to interpret an algorithmic model, they must be able to see it. As [Donald Knuth](https://www-cs-faculty.stanford.edu/~knuth/) says:
 
-> "An algorithm must be seen to be believed",
+> "An algorithm must be seen to be believed, and the best way to learn what an algorithm is all about is to try it."
 
-which I believe applys to both statistical and algorithmic models.
+_Note: most successful black box models come from algorithmic techniques, such as neural networks; this is why I draw this similarity._
 
 ## Why LDR is Better Than Naive Techniques
 
@@ -79,7 +79,7 @@ As machine learning algorithms go, LDR is pretty simple. It's effectively just a
 
 1. Bin the samples according to regular intervals. For each dimension, group points with resolution r, reducing the value of the bin to the mean prediction across it.
 
-See the [paper](docs/paper/paper.pdf) for more detail.
+See the [paper](https://raw.githubusercontent.com/Ekrekr/ldr/master/docs/paper/paper.pdf) for more detail.
 
 ## Additional Notes
 
