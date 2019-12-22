@@ -13,7 +13,7 @@ with open(path.join(LOCAL_PATH, 'README.md')) as f:
 
 setup(
     name='ldr',
-    version='0.3',
+    version='0.4',
     description='Latent Dimensionality Reduction in Python',
     long_description=f"{LONG_DESCRIPTION}",
     long_description_content_type='text/markdown',

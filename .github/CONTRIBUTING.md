@@ -15,3 +15,5 @@ It's not worth doing this for singular small changes or non critical issues.
 - `Python3 setup.py sdist`.
 
 - `twine upload --skip-existing dist/*`.
+
+- Enter credentials.

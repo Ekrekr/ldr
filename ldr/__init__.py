@@ -311,6 +311,97 @@ class LDR:
         if show:
             plt.show()
 
+    def _draw_1d_subplot(self,
+                         axes: plt.subplot,
+                         col: int,
+                         row: int,
+                         feature: str,
+                         classes: list,
+                         vertical: bool = False):
+        """
+        Draws 1d graph for a specified feature.
+
+        Args:
+            axes: Axes to draw to.
+            col: Subplot column.
+            row: Subplot row.
+            feature: Subplot feature to draw.
+            classes: Labels to give as classes to plot.
+            vertical: If true, draw vertically rather than horizontally.
+        """
+        min_val = self.min_max[feature]["min"]
+        max_val = self.min_max[feature]["max"]
+
+        # Select mid values of intervals for x values on plot.
+        inter_vals = [self._rescale(min_val, max_val, i.mid)
+                      for i in np.array(self.intervals)]
+
+        subplot = axes
+        if type(axes) == np.ndarray:
+            if type(axes[0]) == np.ndarray:
+                subplot = axes[col, row]
+            else:
+                subplot = axes[row]
+
+        if vertical:
+            j = 0
+            for _, v_class in self.feature_bins[feature].iteritems():
+                subplot.plot(v_class.values, inter_vals,
+                             color=self.colors[j])
+                j += 1
+            subplot.set_xlim(0.0, 1.0)
+            # Overshooting the arange causes 1.0 to be visible.
+            subplot.set_xticks(np.arange(0.0, 1.25, 0.25))
+            subplot.set_ylim(min_val, max_val)
+            subplot.set_yticks(np.linspace(min_val, max_val, 5))
+            subplot.grid(True)
+            subplot.set_ylabel(self._break_text(feature))
+            subplot.legend(labels=classes, title="Classes",
+                           loc="upper right")
+            # subplot.invert_yaxis()
+        else:
+            j = 0
+            for _, v_class in self.feature_bins[feature].iteritems():
+                subplot.plot(inter_vals, v_class.values,
+                             color=self.colors[j])
+                j += 1
+            subplot.set_ylim(0.0, 1.0)
+            # Overshooting the arange causes 1.0 to be visible.
+            subplot.set_yticks(np.arange(0.0, 1.25, 0.25))
+            subplot.set_xlim(min_val, max_val)
+            subplot.set_xticks(np.linspace(min_val, max_val, 5))
+            subplot.grid(True)
+            subplot.set_xlabel(self._break_text(feature))
+            subplot.legend(labels=classes, title="Classes",
+                           loc="upper right")
+
+    def _draw_2d_subplot(self,
+                         axes: plt.subplot,
+                         col: int,
+                         row: int,
+                         x_feature: str,
+                         y_feature: str,
+                         classes: list):
+        """
+        Draws 2d subplot.
+        """
+        z2d, min_x, max_x, min_y, max_y = self._bin_2d_values(x_feature,
+                                                              y_feature)
+
+        axes[col, row].imshow(z2d, extent=(0.0, 1.0, 1.0, 0.0))
+        axes[col, row].scatter(self.scaled[x_feature],
+                               self.scaled[y_feature], c="#000000",
+                               s=3, marker="o", alpha=0.2, zorder=1)
+        axes[col, row].set_xlim(0.0, 1.0)
+        axes[col, row].set_xticklabels(
+            self._make_scientific(np.linspace(min_x, max_x, 5)))
+        axes[col, row].set_ylim(0.0, 1.0)
+        axes[col, row].set_yticklabels(
+            self._make_scientific(np.linspace(min_y, max_y, 5)))
+        axes[col, row].yaxis.tick_right()
+        axes[col, row].yaxis.set_label_position("right")
+        axes[col, row].grid(False)
+
     def _print(self, msg: str):
         """
         Prints if verbose is flagged, otherwise ignores.
@@ -448,83 +539,6 @@ class LDR:
             ret += ("\n" + txt[36:54])
         return ret
 
-    def _draw_1d_subplot(self,
-                         axes: plt.subplot,
-                         col: int,
-                         row: int,
-                         feature: str,
-                         classes: list,
-                         vertical: bool = False):
-        """
-        Draws 1d graph for a specified feature.
-
-        Args:
-            axes: Axes to draw to.
-            col: Subplot column.
-            row: Subplot row.
-            feature: Subplot feature to draw.
-            classes: Labels to give as classes to plot.
-            vertical: If true, draw vertically rather than horizontally.
-        """
-        min_val = self.min_max[feature]["min"]
-        max_val = self.min_max[feature]["max"]
-
-        # Select mid values of intervals for x values on plot.
-        inter_vals = [self._rescale(min_val, max_val, i.mid)
-                      for i in np.array(self.intervals)]
-
-        subplot = axes
-        if type(axes) == np.ndarray:
-            if type(axes[row]) == np.ndarray:
-                subplot = axes[col, row]
-            else:
-                subplot = axes[row]
-
-        if vertical:
-            j = 0
-            for _, v_class in self.feature_bins[feature].iteritems():
-                subplot.plot(v_class.values, inter_vals,
-                             color=self.colors[j])
-                j += 1
-            subplot.set_xlim(0.0, 1.0)
-            # Overshooting the arange causes 1.0 to be visible.
-            subplot.set_xticks(np.arange(0.0, 1.25, 0.25))
-            subplot.set_ylim(min_val, max_val)
-            subplot.set_yticks(np.linspace(min_val, max_val, 5))
-            subplot.grid(True)
-            subplot.set_ylabel(self._break_text(feature))
-            subplot.legend(labels=classes, title="Classes",
-                           loc="upper right")
-            subplot.invert_yaxis()
-        else:
-            j = 0
-            for _, v_class in self.feature_bins[feature].iteritems():
-                subplot.plot(inter_vals, v_class.values,
-                             color=self.colors[j])
-                j += 1
-            subplot.set_ylim(0.0, 1.0)
-            # Overshooting the arange causes 1.0 to be visible.
-            subplot.set_yticks(np.arange(0.0, 1.25, 0.25))
-            subplot.set_xlim(min_val, max_val)
-            subplot.set_xticks(np.linspace(min_val, max_val, 5))
-            subplot.grid(True)
-            subplot.set_xlabel(self._break_text(feature))
-            subplot.legend(labels=classes, title="Classes",
-                           loc="upper right")
-
-    def _make_scientific(self,
-                         arr: np.array):
-        """
-        Turns numpy array numbers into scientific format.
-
-        Args:
-            arr: Array to convert.
-
-        Returns:
-            Array of strings in scientific number format.
-        """
-        return ["%.2E" % Decimal(i) for i in arr]
-
     def _bin_2d_values(self,
                        x_col: str,
                        y_col: str):
@@ -563,33 +577,6 @@ class LDR:
 
         return z2d, min_x, max_x, min_y, max_y
 
-    def _draw_2d_subplot(self,
-                         axes: plt.subplot,
-                         col: int,
-                         row: int,
-                         x_feature: str,
-                         y_feature: str,
-                         classes: list):
-        """
-        Draws 2d subplot.
-        """
-        z2d, min_x, max_x, min_y, max_y = self._bin_2d_values(x_feature,
-                                                              y_feature)
-
-        axes[col, row].imshow(z2d, extent=(0.0, 1.0, 1.0, 0.0))
-        axes[col, row].scatter(self.scaled[x_feature],
-                               self.scaled[y_feature], c="#000000",
-                               s=3, marker="o", alpha=0.2, zorder=1)
-        axes[col, row].set_xlim(0.0, 1.0)
-        axes[col, row].set_xticklabels(
-            self._make_scientific(np.linspace(min_x, max_x, 5)))
-        axes[col, row].set_ylim(0.0, 1.0)
-        axes[col, row].set_yticklabels(
-            self._make_scientific(np.linspace(min_y, max_y, 5)))
-        axes[col, row].yaxis.tick_right()
-        axes[col, row].yaxis.set_label_position("right")
-        axes[col, row].grid(False)
-
     def _select_feature_subset(self,
                                features: typing.List[str],
                                min_features: int = 0):
@@ -619,3 +606,16 @@ class LDR:
                             f"Requested features: {features}")
 
         return features
+
+    def _make_scientific(self,
+                         arr: np.array):
+        """
+        Turns numpy array numbers into scientific format.
+
+        Args:
+            arr: Array to convert.
+
+        Returns:
+            Array of strings in scientific number format.
+        """
+        return ["%.2E" % Decimal(i) for i in arr]

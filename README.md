@@ -1,4 +1,4 @@
-# LDR
+<img src="docs/images/header.png" style="box-shadow: 0 0 0.2rem 0.2rem #969696; width: 80%; display: block; margin-left: auto; margin-right: auto;"/>
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)](eliaskassell.com)
 [![GitHub Issues](https://img.shields.io/github/issues/ekrekr/ldr.svg)](https://github.com/ekrekr/ldr/issues)
@@ -9,15 +9,7 @@ LDR stands for **Latent Dimensionality Reduction**. It is a generic method for i
 
 ## About
 
-The purpose of LDR is to solve a common and [controversial](https://arxiv.org/abs/1811.10154) problem. Often models that have a higher predictive accuracy are more complex. These complex models are sensibly referred to as **black box models**. This is frustrating for many data scientists, as they end up with a model that performs well, but **can't explain why**. Inability to explain the model frequently causes the model to **fail in critical situations**, that are difficult to test for.
-
-LDR aims to bridge that gap by providing a generic, reliable algorithmic method for interpreting most models. I define interpretability as:
-
-1. Understanding the quality of a systems current understanding. Is the model overfitting, is there insufficient training data, and thus will it fail when deployed to the real world?
-
-2. Interpreting how the value of a feature, or subset of features, affects a model's prediction (which I refer to here as **feature interpretation**).
-
-3. The ability to use a model when not all values for the input features are present.
+The purpose of LDR is to solve a common data science problem. Often models that have a higher predictive accuracy are more complex. These complex models are sensibly referred to as **black box models**. This is frustrating for many data scientists, as they end up with a model that performs well, but **can't explain why**. Inability to explain the model frequently causes the model to **fail in critical situations**, that are difficult to test for.
 
 ## Getting Started
 
@@ -25,7 +17,7 @@ LDR aims to bridge that gap by providing a generic, reliable algorithmic method 
 
 [Python3](https://www.python.org/download/releases/3.0/).
 
-Some examples contain additional that are not installed as dependencies by default, such as [PyTorch](https://pytorch.org).
+_Note: Some examples contain additional that are not installed as dependencies by default, such as [PyTorch](https://pytorch.org)._
 
 ### Installation
 
@@ -45,11 +37,11 @@ An example analysis of a classification problem can be found [here](examples/cla
 
 ### Explanation
 
-The examples above generate either 1D or 2D visualizations. These demonstrate the certainty of the model across the sample space it is trained on. Take these 1D visualizations for example, which describe the **model's certainty of malignancy classification of mean area and area error of breast cancer** samples in a [study](<https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)>).
+The examples above generate either 1D or 2D visualizations. These demonstrate the certainty of the model across the sample space it is trained on. Take the 1D visualizations from the classification example, which describe the **model's certainty of malignancy classification of mean area and area error of breast cancer** samples in a [study](<https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)>).
 
 #### 1 Dimensional Visualization
 
-<img src="tests/output/breast_cancer_1d.png" />
+<img src="tests/output/breast_cancer_1d.png" style="box-shadow: 0 0 0.2rem 0.2rem #969696; width: 70%; display: block; margin-left: auto; margin-right: auto;"/>
 
 Here what can be seen is that if a cancer has a **mean area of less than 250** then the model is most likely to **classify it as benign**, whereas if it has a **mean area of more than 1200** then it is almost certainly going to be **classified as malignant**.
 
@@ -57,17 +49,38 @@ With the area error, what can be seen is that **between 280 and 480**, there is 
 
 #### 2 Dimensional Visualization
 
-<img src="tests/output/breast_cancer_2d.png" />
+<img src="tests/output/breast_cancer_2d.png" style="box-shadow: 0 0 0.2rem 0.2rem #969696; width: 70%; display: block; margin-left: auto; margin-right: auto;"/>
 
-#### How Model Certainty is Calculated
+Interpolating two classification certainties of individual features results in the heatmap in the bottom right. What can be seen is that the majority of samples have a low mean area and a low area error. When samples **deviate away from the bottom left**, with increasing mean area and area errors, the **probability of a malignancy classification dramatically increases**.
 
-#### Why Naive Regression Sucks
+#### n Dimensional Visualizations
+
+Even though only 1 and 2 dimensional visualizations are given, the entire classifier certainty across the sample space has been mapped. In this study there are actualy **30 features**, but by using LDR the individual components can be easily extracted. In order for a human to interpret a model, they must be able to see it. As [Donald Knuth says](https://en.wikiquote.org/wiki/Talk:Donald_Knuth):
+
+> "An algorithm must be seen to be believed",
+
+which I believe applys to both statistical and algorithmic models.
+
+## Why LDR is Better Than Naive Techniques
+
+Naive techniques for analysis black box models consist of analysing individual features (or composite functions of features) directly against their classifications resulting from each sample in the sample space. Because of this, the extrapolation that happens when applying the model to real world situations is never experimented against. Because LDR draws samples randomly from a kernel density estimate of the sample space, by default there is extrapolation.
+
+## The LDR Recipe
+
+As machine learning algorithms go, LDR is pretty simple. It's effectively just a [monte-carlo integration](https://en.wikipedia.org/wiki/Monte_Carlo_integration) across the sample space, using the [VEGAS algorithm](https://en.wikipedia.org/wiki/VEGAS_algorithm) as the sampling method.
+
+1. Min-max scale the data so that it falls into [0, 1] intervals.
+
+1. Train a predictive model on the scaled data.
+
+1. Create a kernel density estimate of the training samples.
+
+1. Sample n new points from the kernel density estimate, using the predictive model to make a prediction at each point.
+
+1. Bin the samples according to regular intervals. For each dimension, group points with resolution r, reducing the value of the bin to the mean prediction across it.
+
+See the [paper](docs/paper/paper.pdf) for more detail.
 
 ## Additional Notes
 
 If you find this package useful, please consider [contributing](contributing.md)!
-
-Examples
-How To
-Technical
-Explanation
