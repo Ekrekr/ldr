@@ -4,8 +4,6 @@ LDR - Classification Example
 import os
 import numpy as np
 import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 # import torch
 # import torch.nn as nn
 # import torch.nn.functional as F
@@ -13,8 +11,6 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import RandomForestClassifier, IsolationForest
 from sklearn.model_selection import train_test_split
-from sklearn import svm
-from sklearn.neighbors import KernelDensity
 
 from ldr import LDR
 

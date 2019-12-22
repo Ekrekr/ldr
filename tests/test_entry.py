@@ -61,18 +61,15 @@ class TestEntry:
         ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_,
                              n_samples=10000)
 
-        features = ["mean radius", "area error", "worst concavity"]
-
         path = os.path.join(os.path.dirname(__file__), "output",
                             "breast_cancer_1d.png")
-        ldr.vis_1d(title="Breast Cancer Classifier Certainty",
-                   save=path)
+        ldr.vis_1d(save=path,
+                   features=["mean area", "area error"])
 
         path = os.path.join(os.path.dirname(__file__), "output",
                             "breast_cancer_2d.png")
-        ldr.vis_2d(title="Breast Cancer Classifier Certainty Matrix",
-                   save=path,
-                   features=features)
+        ldr.vis_2d(save=path,
+                   features=["mean area", "area error"])
 
     @pytest.fixture(scope="module")
     def wine_data(self):
