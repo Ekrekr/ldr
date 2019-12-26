@@ -26,6 +26,7 @@ class Classification:
         self.train_rf_classifier()
         self.train_if_classifier()
         self.density_estimate()
+        self.impute_features()
         self.plot_visuals(output_path)
 
     def load_data(self):
@@ -46,8 +47,8 @@ class Classification:
         self.ldr = LDR(self.df, self.targets)
 
         (self.X_train, self.X_test, self.y_train,
-            self.y_test) = train_test_split(self.ldr.scaled, self.ldr.targets,
-                                            test_size=0.3, random_state=42)
+         self.y_test) = train_test_split(self.ldr.scaled, self.ldr.targets,
+                                         test_size=0.3, random_state=42)
 
     def train_rf_classifier(self):
         """
@@ -94,10 +95,22 @@ class Classification:
         self.ldr.density_estimate(
             self.rf_clf.predict_proba, self.rf_clf.classes_, n_samples=10000)
 
+    def impute_features(self):
+        """
+        Makes a prediction when there's a missing feature.
+        """
+        sample_df = self.df[:5]
+        sample_targets = self.df[:5]
+        # print("Sample df:", sample_df)
+        # print("Sample targets:", sample_targets)
+        self.ldr.predict(sample_df)
+
     def plot_visuals(self, output_path):
         """
         Plot and save visual outputs available.
         """
+        if output_path is None:
+            pass
         selected_features = ["mean area",
                              "mean symmetry", "smoothness error"]
         self.ldr.vis_1d(

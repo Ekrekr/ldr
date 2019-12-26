@@ -99,8 +99,8 @@ class LDR:
         self._check_class_order()
         self._check_data_numerical()
 
-        scaler = MinMaxScaler()
-        scale = scaler.fit_transform(self.data_df)
+        self.scaler = MinMaxScaler()
+        scale = self.scaler.fit_transform(self.data_df)
         self.scaled = pd.DataFrame(scale)
 
         # Reshuffle the scaled columns to be same as input; nicer for user.
@@ -108,8 +108,9 @@ class LDR:
 
         # Create structure to store min and max values from scaling. This is
         # useful for plotting.
-        min_max = scaler.inverse_transform([[0 for i in self.scaled.columns],
-                                            [1 for i in self.scaled.columns]])
+        min_max = self.scaler.inverse_transform(
+            [[0 for i in self.scaled.columns],
+             [1 for i in self.scaled.columns]])
         self.min_max = pd.DataFrame(index=["min", "max"])
         for i, col in enumerate(self.scaled.columns):
             self.min_max[col] = [np.round(min_max[0][i], 2),
@@ -284,8 +285,7 @@ class LDR:
         for col, row in top_left_co:
             x_feature = features[col - 1]
             y_feature = features[n_features - row]
-            self._draw_2d_subplot(axes, col, row, x_feature, y_feature,
-                                  classes)
+            self._draw_2d_subplot(axes, col, row, x_feature, y_feature)
 
         # Add line charts to top and left.
         for col, row in top_row:
@@ -310,6 +310,48 @@ class LDR:
 
         if show:
             plt.show()
+
+    def predict(self, data: pd.DataFrame) -> pd.Series:
+        """
+        Makes a value or classification prediction.
+
+        If there are missing features, then they are
+
+        Args:
+            data: Input data to make predictions from.
+
+        Returns:
+            The predictions from the data.
+        """
+        self._check_density_estimate_run()
+
+        sorted_df = pd.DataFrame()
+        for key in self.scaled:
+            if key in data:
+                sorted_df[key] = data[key]
+            else:
+                sorted_df[key] = np.nan
+        sorted_df = sorted_df[self.data_df.columns]
+
+        scaled = pd.DataFrame(self.scaler.transform(sorted_df))
+        scaled.columns = sorted_df.columns
+        print("scaled\n", scaled)
+
+        # print("Intervals:\n", self.feature_bins["mean radius"].keys)
+
+        # TODO: Optimise this.
+        class_predictions = pd.DataFrame(columns=self.classifications)
+        for _, row in scaled.iterrows():
+            certainty_sums = pd.DataFrame(columns=self.classifications)
+            for key in self.scaled:
+                # (-2) required to trim either end due to intervals.
+                bin_index = int(row[key] * (self.n_bins - 2))
+                selected_row = self.feature_bins[key].iloc[bin_index]
+                certainty_sums = certainty_sums.append(
+                    selected_row, ignore_index=True)
+            class_prediction = certainty_sums.mean(axis=0)
+            class_predictions = class_predictions.append(
+                class_prediction, ignore_index=True)
 
     def _draw_1d_subplot(self,
                          axes: plt.subplot,
@@ -358,7 +400,6 @@ class LDR:
             subplot.set_ylabel(self._break_text(feature))
             subplot.legend(labels=classes, title="Classes",
                            loc="upper right")
-            # subplot.invert_yaxis()
         else:
             j = 0
             for _, v_class in self.feature_bins[feature].iteritems():
@@ -380,8 +421,7 @@ class LDR:
                          col: int,
                          row: int,
                          x_feature: str,
-                         y_feature: str,
-                         classes: list):
+                         y_feature: str):
         """
         Draws 2d subplot.
         """
