@@ -100,9 +100,6 @@ class Classification:
         Makes a prediction when there's a missing feature.
         """
         sample_df = self.df[:5]
-        sample_targets = self.df[:5]
-        # print("Sample df:", sample_df)
-        # print("Sample targets:", sample_targets)
         self.ldr.predict(sample_df)
 
     def plot_visuals(self, output_path):

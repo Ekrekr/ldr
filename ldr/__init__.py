@@ -315,8 +315,6 @@ class LDR:
         """
         Makes a value or classification prediction.
 
-        If there are missing features, then they are
-
         Args:
             data: Input data to make predictions from.
 
@@ -332,14 +330,9 @@ class LDR:
             else:
                 sorted_df[key] = np.nan
         sorted_df = sorted_df[self.data_df.columns]
-
         scaled = pd.DataFrame(self.scaler.transform(sorted_df))
         scaled.columns = sorted_df.columns
-        print("scaled\n", scaled)
 
-        # print("Intervals:\n", self.feature_bins["mean radius"].keys)
-
-        # TODO: Optimise this.
         class_predictions = pd.DataFrame(columns=self.classifications)
         for _, row in scaled.iterrows():
             certainty_sums = pd.DataFrame(columns=self.classifications)
@@ -352,6 +345,8 @@ class LDR:
             class_prediction = certainty_sums.mean(axis=0)
             class_predictions = class_predictions.append(
                 class_prediction, ignore_index=True)
+
+        return class_predictions
 
     def _draw_1d_subplot(self,
                          axes: plt.subplot,

@@ -39,37 +39,21 @@ class TestEntry:
             # Actual classes are 'benign' and 'malignant'.
             LDR(data_df, targets, class_order=["hippo", "giraffe", "lion"])
 
-    def test_ldr_breast_cancer(self, breast_cancer_data):
+    def test_ldr_predictions_accurate(self, classification_example):
         """
-        Tests that LDR works on the breast cancer dataset.
+        Tests that making predictions use density estimation is accurate.
         """
-        data_df, targets = breast_cancer_data
-        ldr = LDR(data_df, targets)
+        targets = classification_example.targets
+        raw_predictions = classification_example.ldr.predict(
+            classification_example.df)
+        predictions = []
+        for _, row in raw_predictions.iterrows():
+            predictions.append(row.idxmax())
+        predictions = pd.Series(predictions)
+        score = f1_score(targets, predictions, pos_label="malignant")
 
-        # Random forest works well as a basic classifier.
-        x_train, x_test, y_train, y_test = train_test_split(
-            ldr.scaled, ldr.targets, test_size=0.3, random_state=42)
-
-        rf_clf = RandomForestClassifier(n_estimators=100, random_state=42)
-        rf_clf.fit(x_train, y_train)
-        preds = rf_clf.predict(x_test)
-
-        # sanity check that F1 score is above 0.9.
-        assert f1_score(y_test, preds, pos_label="malignant") > 0.9
-
-        # Fewer samples used to prevent longer run time of test.
-        ldr.density_estimate(rf_clf.predict_proba, rf_clf.classes_,
-                             n_samples=10000)
-
-        path = os.path.join(os.path.dirname(__file__), "output",
-                            "breast_cancer_1d.png")
-        ldr.vis_1d(save=path,
-                   features=["mean area", "area error"])
-
-        path = os.path.join(os.path.dirname(__file__), "output",
-                            "breast_cancer_2d.png")
-        ldr.vis_2d(save=path,
-                   features=["mean area", "area error"])
+        # This should be much higher; solving issue #1 will fix.
+        assert(score > 0.85)
 
     @pytest.fixture(scope="module")
     def wine_data(self):
