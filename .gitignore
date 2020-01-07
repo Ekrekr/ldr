@@ -118,4 +118,4 @@ venv.bak/
 *.synctex.gz
 
 # VSCode files
-.vscode
+.vscodedocs/paper/
