@@ -5,11 +5,11 @@
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/ekrekr/ldr.svg)](https://github.com/ekrekr/ldr/pulls)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-LDR stands for **Latent Dimensionality Reduction**. It is a generic method for interpreting models. It is deployed [here](https://pypi.org/project/ldr/) as a python module.
+LDR stands for **Latent Dimensionality Reduction**. It is a generic method for interpreting models and making accurate predictions when features are missing. It is deployed [here](https://pypi.org/project/ldr/) as a python module.
 
 ## About
 
-The purpose of LDR is to solve a common data science problem. Often models that have a higher predictive accuracy are more complex. These complex models are sensibly referred to as **black box models**. This is frustrating for many data scientists, as they end up with a model that performs well, but **can't explain why**. Inability to explain the model frequently causes the model to **fail in critical situations**, that are difficult to test for.
+The purpose of LDR is to solve a common data science problem. Often models that have a higher predictive accuracy are more complex. These complex models are sensibly referred to as **black box models**. This is frustrating for many data scientists, as they end up with a model that performs well, but **can't explain why**. Inability to explain the model frequently causes the model to **fail in critical situations**, that are difficult to test for. Also, black box models typically require all features to be present to make a prediction. LDR provides a solution to both of these problems.
 
 ## Getting Started
 
@@ -35,7 +35,15 @@ An example analysis of a classification problem can be found [here](https://raw.
 
 <!-- An example analysis of a regression problem can be found [here](examples/regression_example.ipynb). -->
 
-### Explanation
+### Imputation from density
+
+After calculating the density estimate of the trained model using `density_estimate()`, using `predict()` on new data will automatically impute missing features.
+
+_Note: currently only missing columns will be imputed, not the odd value here or there._
+
+_Note: This has not been fully implemented, so the optimal accuracy has not been achieved, and it's a bit slow. [Contribution welcome](https://github.com/Ekrekr/ldr/issues) :)._
+
+### Visualizations
 
 The examples above generate either 1D or 2D visualizations. These demonstrate the certainty of the model across the sample space it is trained on. Take the 1D visualizations from the classification example, which describe the **model's certainty of malignancy classification of mean area and area error of breast cancer** samples in a [study](<https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)>).
 
@@ -63,7 +71,7 @@ _Note: most successful black box models come from algorithmic techniques, such a
 
 ## Why LDR is Better Than Naive Techniques
 
-Naive techniques for analysis black box models consist of analysing individual features (or composite functions of features) directly against their classifications resulting from each sample in the sample space. Because of this, the extrapolation that happens when applying the model to real world situations is never experimented against. Because LDR draws samples randomly from a kernel density estimate of the sample space, by default there is extrapolation.
+Naive techniques for analysis black box models consist of analysing individual features (or composite functions of features) directly against their classifications resulting from each sample in the sample space. Because of this, the extrapolation that happens when applying the model to real world situations is never experimented against. Because LDR draws samples randomly from a KDE (kernel density estimate) of the sample space, by default there is extrapolation. Because of the KDE of the model, features can be imputed during prediction by taking the typical value of variables at the highest density, giving a more accurate representation of the feature space.
 
 ## The LDR Recipe
 

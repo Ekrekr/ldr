@@ -93,6 +93,7 @@ class LDR:
         self.class_bins = None
         self.feature_bins = None
         self.intervals = None
+        self.kernel = None
         self.density_estimate_run = False
 
         self.problem_type = self._determine_problem_type()
@@ -157,11 +158,11 @@ class LDR:
         self.k_dens = k_dens
         self.n_bins = n_bins
 
-        kernel = KernelDensity(self.k_dens).fit(self.scaled)
+        self.kernel = KernelDensity(self.k_dens).fit(self.scaled)
 
         # Draw random sample from the sample space and store, calculating
         # prediction.
-        self.samples = pd.DataFrame(kernel.sample(self.n_samples))
+        self.samples = pd.DataFrame(self.kernel.sample(self.n_samples))
         self.samples.columns = self.scaled.columns
         self.sample_predictions = self.func(self.samples)
 
@@ -315,6 +316,9 @@ class LDR:
         """
         Makes a value or classification prediction.
 
+        For each class, calculates the certainty of mean density for that
+        class. Give each prediction the classification of the most certain.
+
         Args:
             data: Input data to make predictions from.
 
@@ -323,30 +327,55 @@ class LDR:
         """
         self._check_density_estimate_run()
 
-        sorted_df = pd.DataFrame()
-        for key in self.scaled:
-            if key in data:
-                sorted_df[key] = data[key]
-            else:
-                sorted_df[key] = np.nan
-        sorted_df = sorted_df[self.data_df.columns]
-        scaled = pd.DataFrame(self.scaler.transform(sorted_df))
-        scaled.columns = sorted_df.columns
+        scaled_dfs = {}
+        for class_item in self.class_order:
+            sorted_df = pd.DataFrame(columns=self.scaled.columns)
+            imputed_vals = {}
 
-        class_predictions = pd.DataFrame(columns=self.classifications)
-        for _, row in scaled.iterrows():
-            certainty_sums = pd.DataFrame(columns=self.classifications)
             for key in self.scaled:
-                # (-2) required to trim either end due to intervals.
-                bin_index = int(row[key] * (self.n_bins - 2))
-                selected_row = self.feature_bins[key].iloc[bin_index]
-                certainty_sums = certainty_sums.append(
-                    selected_row, ignore_index=True)
-            class_prediction = certainty_sums.mean(axis=0)
-            class_predictions = class_predictions.append(
-                class_prediction, ignore_index=True)
+                if key in data:
+                    sorted_df[key] = data[key]
+                else:
+                    # TODO: Is taking the mean here really the best method?
+                    imputed_vals[key] = np.mean(
+                        self.class_bins[class_item][key])
 
-        return class_predictions
+            # Imputed features added last, so that rows populated correctly.
+            for feature, imputed_val in imputed_vals.items():
+                sorted_df[feature] = imputed_val
+
+            sorted_df = sorted_df[self.scaled.columns]
+            scaled_dfs[class_item] = pd.DataFrame(
+                self.scaler.transform(sorted_df))
+            scaled_dfs[class_item].columns = sorted_df.columns
+
+        # TODO: Make this not O(n^3) (woof).
+        class_predictions = {}
+        for class_item in self.class_order:
+            class_prediction = pd.DataFrame(columns=self.classifications)
+
+            for _, row in scaled_dfs[class_item].iterrows():
+                certainty_sums = pd.DataFrame(columns=self.classifications)
+
+                for key in self.scaled:
+                    bin_index = max(0, min(1, row[key]))
+                    # (-2) required to trim either end due to intervals.
+                    bin_index = int(bin_index * (self.n_bins - 2))
+                    selected_row = self.feature_bins[key].iloc[bin_index]
+                    certainty_sums = certainty_sums.append(
+                        selected_row, ignore_index=True)
+
+                # TODO: Is taking the mean here really the best method?
+                feature_prediction = certainty_sums.mean(axis=0)
+                class_prediction = class_prediction.append(
+                    feature_prediction, ignore_index=True)
+            class_predictions[class_item] = class_prediction
+
+        # TODO: dynamically merge class predictions together, selecting row
+        # value class with max certainty of it's own class within that df.
+        final_prediction = class_predictions[self.class_order[0]]
+
+        return final_prediction
 
     def _draw_1d_subplot(self,
                          axes: plt.subplot,

@@ -99,7 +99,8 @@ class Classification:
         """
         Makes a prediction when there's a missing feature.
         """
-        sample_df = self.df[:5]
+        sample_df = self.df[:50]
+        sample_df = sample_df.drop(["mean radius", "mean concavity"], axis=1)
         self.ldr.predict(sample_df)
 
     def plot_visuals(self, output_path):
