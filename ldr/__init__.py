@@ -75,6 +75,7 @@ class LDR:
 
         set_style()
 
+        data_df["target"] = targets
         self.data_df = data_df
         self.targets = np.array(targets)
         # The list of unique values is the order of classes if not specified.
@@ -124,7 +125,7 @@ class LDR:
 
     def density_estimate(self,
                          func: any,
-                         classifications: list,
+                         classifications: list = None,
                          n_samples: int = 50000,
                          k_dens: float = 0.02,
                          n_bins: int = 51):

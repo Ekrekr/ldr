@@ -635,7 +635,7 @@ scatter.marker : o         ## The default marker type for scatter plots.
 ## ***************************************************************************
 ## The default savefig params can be different from the display params
 ## e.g., you may want a higher resolution, or to make the figure
-background ffffff
+#background #ffffff
 #savefig.dpi       : figure      ## figure dots per inch or 'figure'
 savefig.facecolor : ffffff       ## figure facecolor when saving
 savefig.edgecolor : f0f0f0       ## figure edgecolor when saving
